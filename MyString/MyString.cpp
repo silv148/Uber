@@ -1,13 +1,11 @@
 #include "MyString.h"
 
-MyString::MyString(size_t capacity)
-{
+MyString::MyString(size_t capacity) {
 	_length = capacity - 1;
 	_data = new char[capacity];
 }
 
-MyString operator+(const MyString& lhs, const MyString& rhs)
-{
+MyString operator+(const MyString& lhs, const MyString& rhs) {
 	MyString result(lhs._length + rhs._length + 1);
 
 	result[0] = '\0';
@@ -17,8 +15,7 @@ MyString operator+(const MyString& lhs, const MyString& rhs)
 	return result;
 }
 
-MyString& MyString::operator+=(const MyString& other)
-{
+MyString& MyString::operator+=(const MyString& other) {
 	char* result = new char[(_length += other._length) + 1];
 	result[0] = '\0';
 	strcat(result, _data);
@@ -30,23 +27,19 @@ MyString& MyString::operator+=(const MyString& other)
 	return *this;
 }
 
-MyString::MyString() : MyString(1)
-{
+MyString::MyString() : MyString(1) {
 	_data[0] = '\0';
 }
 
-MyString::MyString(const char* data) : MyString(strlen(data) + 1)
-{
+MyString::MyString(const char* data) : MyString(strlen(data) + 1) {
 	strcpy(_data, data);
 }
 
-MyString::MyString(const MyString& other)
-{
+MyString::MyString(const MyString& other) {
 	copyFrom(other);
 }
 
-MyString& MyString::operator=(const MyString& other)
-{
+MyString& MyString::operator=(const MyString& other) {
 	if (this != &other)
 	{
 		free();
@@ -56,63 +49,52 @@ MyString& MyString::operator=(const MyString& other)
 }
 
 
-void MyString::free()
-{
+void MyString::free() {
 	delete[] _data;
 	_data = nullptr;
 }
 
-MyString::~MyString()
-{
+MyString::~MyString() {
 	free();
 }
 
-size_t MyString::length() const
-{
+size_t MyString::length() const {
 	return _length;
 }
 
-void MyString::copyFrom(const MyString& other)
-{
+void MyString::copyFrom(const MyString& other) {
 	_length = other._length;
 	_data = new char[_length + 1];
 	strcpy(_data, other._data);
 }
 
-void MyString::moveFrom(MyString&& other) noexcept
-{
+void MyString::moveFrom(MyString&& other) {
 	_data = other._data; 
 	other._data = nullptr;
 	_length = other._length;
 }
 
-MyString::MyString(MyString&& other) noexcept
-{
+MyString::MyString(MyString&& other) noexcept {
 	moveFrom(std::move(other));
 }
 
-MyString& MyString::operator=(MyString&& other) noexcept
-{
-	if (this != &other)
-	{
+MyString& MyString::operator=(MyString&& other) noexcept {
+	if (this != &other) {
 		free();
 		moveFrom(std::move(other));
 	}
 	return *this;
 }
 
-char& MyString::operator[](size_t index) //Неконстантен достъп
-{
+char& MyString::operator[](size_t index) {
 	return _data[index];
 }
 
-char MyString::operator[](size_t index) const //Константен достъп 
-{
+char MyString::operator[](size_t index) const {
 	return _data[index];
 }
 
-MyString MyString::substr(size_t begin, size_t howMany) const
-{
+MyString MyString::substr(size_t begin, size_t howMany) const {
 	if (begin + howMany > _length)
 		throw std::length_error("Error, Substr out of range");
 
@@ -124,18 +106,15 @@ MyString MyString::substr(size_t begin, size_t howMany) const
 	return res;
 }
 
-const char* MyString::c_str() const
-{
+const char* MyString::c_str() const {
 	return _data;
 }
 
-std::ostream& operator<<(std::ostream& os, const MyString& str)
-{
+std::ostream& operator<<(std::ostream& os, const MyString& str) {
 	return os << str.c_str();
 }
 
-std::istream& operator>>(std::istream& is, MyString& str)
-{
+std::istream& operator>>(std::istream& is, MyString& str) {
 	char buff[1024];
 	is >> buff; // is.getLine(buff, 1024);
 
@@ -147,28 +126,26 @@ std::istream& operator>>(std::istream& is, MyString& str)
 }
 
 
-bool operator<(const MyString& lhs, const MyString& rhs)
-{
+bool operator<(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
-bool operator<=(const MyString& lhs, const MyString& rhs)
-{
+bool operator<=(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) <= 0;
 }
-bool operator>=(const MyString& lhs, const MyString& rhs)
-{
+
+bool operator>=(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) >= 0;
 }
-bool operator>(const MyString& lhs, const MyString& rhs)
-{
+
+bool operator>(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) > 0;
 }
-bool operator==(const MyString& lhs, const MyString& rhs)
-{
+
+bool operator==(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) == 0;
 }
-bool operator!=(const MyString& lhs, const MyString& rhs)
-{
+
+bool operator!=(const MyString& lhs, const MyString& rhs) {
 	return strcmp(lhs.c_str(), rhs.c_str()) != 0;
 }
