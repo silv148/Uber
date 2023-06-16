@@ -137,14 +137,20 @@ void System::checkOrder(size_t orderId) {
 			throw std::logic_error("This is an invalid command for drivers!");
 		}
 
+		bool hasOrders = false;
+
 		for (size_t i = 0; i < orders.getCount(); i++) {
 			if (orders[i]->getClient().getUsername() == loggedUser->getUsername()
 				&& orders[i]->getId() == orderId) {
 				orders[i]->printOrderForClient();
-				return;
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				hasOrders = true;
 			}
 		}
-	std::cout << "You have no orders with such ID";
+		if(!hasOrders)
+		 std::cout << "You have no orders with such ID";
 	}
 	catch (std::logic_error e) {
 		std::cout << e.what() << std::endl;
@@ -196,6 +202,7 @@ void System::checkMessages() const {
 			throw std::logic_error("This is an invalid command for clients!");
 		}
 
+		bool hasMessages = false;
 		for (size_t i = 0; i < orders.getCount(); i++) {
 			if (&orders[i]->getDriver() && orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
 				std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName() 
@@ -203,10 +210,14 @@ void System::checkMessages() const {
 				orders[i]->getStart().printAddress();
 				std::cout << "To: " << std::endl;
 				orders[i]->getDest().printAddress();
-				return;
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				hasMessages = true;
 			}
 		}
-		std::cout << "You have no orders with such ID";
+		if(!hasMessages)
+			std::cout << "You have no new messages!";
 	}
 	catch (std::logic_error e) {
 		std::cout << e.what() << std::endl;
