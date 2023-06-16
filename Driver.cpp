@@ -27,14 +27,13 @@ void Driver::rate(unsigned short rating) {
 	this->rating.ratingSum += rating;
 }
 
+const bool Driver::isAvailable() const {
+	return available;
+}
+
 double Driver::getRating() const
 {
 	return (double)rating.ratingSum / rating.ratingCount;
-}
-
-const bool Driver::checkIsFree() const
-{
-	return isFree;
 }
 
 void Driver::changeAddress(const Address& newAddress) {
@@ -43,7 +42,7 @@ void Driver::changeAddress(const Address& newAddress) {
 
 void Driver::acceptPayment(size_t orderId, double amount) {
 	accountBalance += amount;
-	isFree = true;
+	available = true;
 }
 
 

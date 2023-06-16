@@ -229,3 +229,33 @@ void System::checkMessages() const {
 		std::cout << "Unknown error." << std::endl;
 	}
 }
+
+void System::finishOrder(size_t orderId) {
+	try {
+		if (!loggedUser)
+			throw std::logic_error("Log in to have access to the system!");
+
+		if (!loggedUser->userIsDriver()) {
+			throw std::logic_error("This is an invalid command for clients!");
+		}
+
+		for (size_t i = 0; i < orders.getCount(); i++) {
+			if (orders[i]->getId()) {
+				if (orderId && orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
+					orders[i]->finishOrder();
+				} 
+				else throw std::logic_error("You have no rights over this order!");
+			}
+			else throw std::logic_error("There is no order with this ID!");
+		}
+	}
+	catch (std::logic_error e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (std::exception e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}

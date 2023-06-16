@@ -13,7 +13,7 @@ private:
 		unsigned ratingCount = 0;
 	} rating;
 
-	bool isFree = true;
+	bool available = true;
 
 public:
 	Driver();
@@ -30,7 +30,11 @@ public:
 	double getRating() const;
 	void rate(unsigned short rating);
 
-	const bool checkIsFree() const;
+	const bool isAvailable() const;
+
+	void setAvailability(bool available) {
+		this->available = available;
+	}
 	void changeAddress(const Address& newAddress);
 	void acceptPayment(size_t orderId, double amount);
 };
