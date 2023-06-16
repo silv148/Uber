@@ -40,18 +40,18 @@ MyString::MyString(const MyString& other) {
 }
 
 MyString& MyString::operator=(const MyString& other) {
-	if (this != &other)
-	{
+	if (this != &other) {
 		free();
 		copyFrom(other);
 	}
 	return *this;
 }
 
-
 void MyString::free() {
-	delete[] _data;
-	_data = nullptr;
+	if (!this) {
+		delete[] _data;
+		_data = nullptr;
+	}
 }
 
 MyString::~MyString() {
@@ -68,20 +68,18 @@ void MyString::copyFrom(const MyString& other) {
 	strcpy(_data, other._data);
 }
 
-void MyString::moveFrom(MyString&& other) {
-	_data = other._data; 
+MyString::MyString(MyString&& other) noexcept {
+	_data = other._data;
 	other._data = nullptr;
 	_length = other._length;
-}
-
-MyString::MyString(MyString&& other) noexcept {
-	moveFrom(std::move(other));
 }
 
 MyString& MyString::operator=(MyString&& other) noexcept {
 	if (this != &other) {
 		free();
-		moveFrom(std::move(other));
+		_data = other._data;
+		other._data = nullptr;
+		_length = other._length;
 	}
 	return *this;
 }
@@ -104,6 +102,12 @@ MyString MyString::substr(size_t begin, size_t howMany) const {
 		res._data[i] = _data[begin + i];
 	res[howMany] = '\0';
 	return res;
+}
+
+void MyString::toLower() {
+	for (size_t i = 0; i < _length; i++)
+		if (_data[i] >= 'A' && _data[i] <= 'Z')
+			_data[i] |= 32;
 }
 
 const char* MyString::c_str() const {

@@ -2,13 +2,11 @@
 #pragma warning(disable:4996)
 #include <iostream>
 
-class MyString
-{
+class MyString {
 	char* _data;
 	size_t _length;
 
 	void copyFrom(const MyString& data);
-	void moveFrom(MyString&& data);
 	void free();
 
 	explicit MyString(size_t capacity); //for memory allocation. How much bytes to allocate
@@ -27,6 +25,7 @@ public:
 	MyString& operator+=(const MyString& other);
 
 	MyString substr(size_t begin, size_t howMany) const;
+	void toLower();
 
 	char& operator[](size_t index);
 	char operator[](size_t index) const;
