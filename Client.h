@@ -10,7 +10,7 @@ public:
 		const MyString& firstName,
 		const MyString& lastName);
 
-	double pay(size_t orderId, double amount);
+	double pay(double amount);
 	void addMoney(double amount);
 
 	User* clone() const override;

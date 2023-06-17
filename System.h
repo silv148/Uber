@@ -42,11 +42,14 @@ public:
 	void rateDriver(const MyString& driverName, const unsigned rating);
 	void checkOrder(size_t orderId);
 	void cancelOrder(size_t orderId);
+	void addMoney(double amount);
+	void pay(size_t orderId, double amount);
 
 	void changeAddress(const Address& address);
 	void checkMessages() const;
 	void acceptOrder(size_t orderId, unsigned minutes);
 	void declineOrder(size_t orderId);
 	void finishOrder(size_t orderId);
+	void acceptPayment(size_t orderId, double amount);
 };
 

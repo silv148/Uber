@@ -1,5 +1,6 @@
 #pragma once
 #include "Driver.h"
+#include "Client.h"
 #include <ctime> 
 #include <iomanip>
 
@@ -9,19 +10,20 @@ private:
 	unsigned minutes = 0;
 	size_t id = static_cast<size_t> (time(NULL));
 	size_t passengersCount = 0;
+	double price = 0;
 	Address start;
 	Address dest;
-	const User* client = nullptr;
+	Client* client = nullptr;
 	Driver* driver = nullptr;
 
-	void setOrder(const User* client,
+	void setOrder(User* client,
 		const Address& start,
 		const Address& dest,
 		size_t passengersCount);
 public:
 	Order() = default;
 
-	Order(const User* client,
+	Order(User* client,
 		const Address& start,
 		const Address& dest,
 		size_t passengersCount);
@@ -29,13 +31,15 @@ public:
 
 	void setMinutes(unsigned minutes);
 	void setDriver(Driver* driver);
+	void setPrice(double amount);
 
 	void printOrderForDriver();
 	void printOrderForClient();
 
 	bool hasDriver() const;
 
-	const User& getClient() const;
+	const Client& getClient() const;
+	Client& getClient();
 	Driver& getDriver();
 	const Driver& getDriver() const;
 	unsigned getMinutes() const;
@@ -43,5 +47,6 @@ public:
 	size_t getPassengersCount() const;
 	Address getStart() const;
 	Address getDest() const;
+	double getPrice() const;
 	void finishOrder();
 };

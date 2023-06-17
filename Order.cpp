@@ -1,6 +1,6 @@
 #include "Order.h"
 
-Order::Order(const User* client, const Address& start, const Address& dest, size_t passengersCount) {
+Order::Order(User* client, const Address& start, const Address& dest, size_t passengersCount) {
 	setOrder(client, start, dest, passengersCount);
 }
 
@@ -12,12 +12,16 @@ void Order::setDriver(Driver* driver) {
 	this->driver = driver;
 }
 
-void Order::setOrder(const User* client,
+void Order::setPrice(double amount) {
+	this->price = amount;
+}
+
+void Order::setOrder(User* client,
 					const Address& start,
 					const Address& dest,
 					size_t passengersCount) 
 {
-	this->client = client;
+	this->client = dynamic_cast<Client*>(client);
 	this->start = start;
 	this->dest = dest;
 	this->passengersCount = passengersCount;
@@ -52,7 +56,11 @@ bool Order::hasDriver() const {
 	return driver;
 }
 
-const User& Order::getClient() const {
+const Client& Order::getClient() const {
+	return *client;
+}
+
+Client& Order::getClient() {
 	return *client;
 }
 
@@ -82,6 +90,10 @@ Address Order::getStart() const {
 
 Address Order::getDest() const {
 	return dest;
+}
+
+double Order::getPrice() const {
+	return getPrice();
 }
 
 void Order::finishOrder() {

@@ -71,7 +71,8 @@ void System::printRules() {
 		<< "login <username> <password>" << std::endl << std::endl
 		<< "You can log out by entering:" << std::endl
 		<< "logout" << std::endl
-		<< "Be mindful that the console will be cleared after you log out!" << std::endl << std::endl;
+		<< "Be mindful that the console will be cleared after you log out!" << std::endl << std::endl
+		<< "To quit the program enter command <quit>!" << std::endl << std::endl;
 
 }
 
@@ -323,6 +324,58 @@ void System::cancelOrder(size_t orderId) {
 	}
 }
 
+void System::addMoney(double amount) {
+	try {
+		if (!loggedUser)
+			throw std::logic_error("Log in to have access to the system!");
+
+		if (loggedUser->userIsDriver())
+			throw std::logic_error("This is an invalid command for drivers!");
+
+		static Client client;
+		client = dynamic_cast<Client&>(*loggedUser);
+
+		client.addMoney(amount);
+
+	}
+	catch (const std::logic_error& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
+void System::pay(size_t orderId, double amount) {
+	try {
+		if (!loggedUser)
+			throw std::logic_error("Log in to have access to the system!");
+
+		if (loggedUser->userIsDriver())
+			throw std::logic_error("This is an invalid command for drivers!");
+
+		for (size_t i = 0; i < orders.getSize(); i++) {
+			if (orders[i]->getId() == orderId) {
+				orders[i]->setPrice(amount);
+				orders[i]->getClient().pay(amount);
+			}
+		}
+
+	}
+	catch (const std::logic_error& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
 void System::changeAddress(const Address& address) {
 	try {
 		if (!loggedUser)
@@ -474,6 +527,31 @@ void System::finishOrder(size_t orderId) {
 	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
 	} catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
+void System::acceptPayment(size_t orderId, double amount) {
+	try {
+		if (!loggedUser)
+			throw std::logic_error("Log in to have access to the system!");
+
+		if (!loggedUser->userIsDriver())
+			throw std::logic_error("This is an invalid command for clients!");
+
+		for (size_t i = 0; i < orders.getSize(); i++)
+			if (orders[i]->getId())
+				if (orderId && orders[i]->getDriver().getUsername() == loggedUser->getUsername())
+					orders[i]->getDriver().acceptPayment(amount);
+
+	}
+	catch (const std::logic_error& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
+	catch (...) {
 		std::cout << "Unknown error." << std::endl;
 	}
 }

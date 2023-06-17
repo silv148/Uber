@@ -49,7 +49,7 @@ void Driver::changeAddress(const Address& newAddress) {
 	address = newAddress;
 }
 
-void Driver::acceptPayment(size_t orderId, double amount) {
+void Driver::acceptPayment(double amount) {
 	accountBalance += amount;
 	available = true;
 }
