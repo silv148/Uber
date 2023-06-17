@@ -21,6 +21,8 @@ public:
 	~System();
 
 	static void printRules();
+	static void printCommandsForClients();
+	static void printCommandsForDrivers();
 	void printUsers();
 	void printOrders();
 
@@ -41,6 +43,7 @@ public:
 	void checkOrder(size_t orderId);
 	void cancelOrder(size_t orderId);
 
+	void changeAddress(const Address& address);
 	void checkMessages() const;
 	void acceptOrder(size_t orderId, unsigned minutes);
 	void declineOrder(size_t orderId);
