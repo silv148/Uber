@@ -12,3 +12,7 @@ double Client::pay(size_t orderId, double amount) {
 void Client::addMoney(double amount) {
 	accountBalance += amount;
 }
+
+User* Client::clone() const {
+	return new Client(*this);
+}

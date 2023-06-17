@@ -54,4 +54,8 @@ void Driver::acceptPayment(size_t orderId, double amount) {
 	available = true;
 }
 
+User* Driver::clone() const {
+	return new Driver(*this);
+}
+
 

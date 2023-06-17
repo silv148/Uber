@@ -36,5 +36,7 @@ public:
 	void setAvailability(bool available);
 	void changeAddress(const Address& newAddress);
 	void acceptPayment(size_t orderId, double amount);
+
+	User* clone() const override;
 };
 

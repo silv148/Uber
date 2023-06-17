@@ -24,6 +24,8 @@ public:
 		 const MyString& password,
 		 const MyString& firstName,
 		 const MyString& lastName);
+
+	virtual User* clone() const;
 	virtual ~User() = default;
 
 	const MyString& getUsername() const;

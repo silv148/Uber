@@ -1,7 +1,6 @@
 #pragma once
 #include "User.h"
 #include "Address.h"
-#include "Container.hpp"
 
 class Client : public User {
 public:
@@ -13,5 +12,7 @@ public:
 
 	double pay(size_t orderId, double amount);
 	void addMoney(double amount);
+
+	User* clone() const override;
 };
 

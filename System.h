@@ -1,5 +1,4 @@
 #pragma once
-#include "Container.hpp"
 #include "Client.h"
 #include "Order.h"
 #include "Vector.hpp"
@@ -9,16 +8,18 @@ const double EPSILON = 0.000001;
 
 class System {
 private:
-	Container<User> users;
-	Container<Order> orders;
-	Container<Order> finishedOrders;
+	Vector<User*> users;
+	Vector<Order*> orders;
+	Vector<Order*> finishedOrders;
 	User* loggedUser = nullptr;
 
-	static Driver* findNextDriver(Vector<Driver>& drivers, const Driver* driver);
-	static void sortDriversByDistance(const Order* order, Vector<Driver>& drivers);
+	static Driver& findNextDriver(Vector<Driver*>& drivers, const Driver* driver);
+	static void sortDriversByDistance(const Order* order, Vector<Driver*>& drivers);
 	Driver& getClosestDriver(Order* order);
 
 public:
+	~System();
+
 	static void printRules();
 	void printUsers();
 	void printOrders();
