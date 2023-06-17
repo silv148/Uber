@@ -1,6 +1,7 @@
 #pragma once
 #include "Driver.h"
-#include <ctime>    
+#include <ctime> 
+#include <iomanip>
 
 class Order {
 private:
@@ -31,6 +32,8 @@ public:
 
 	void printOrderForDriver();
 	void printOrderForClient();
+
+	bool hasDriver() const;
 
 	const User& getClient() const;
 	Driver& getDriver();

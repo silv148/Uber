@@ -28,13 +28,12 @@ public:
 	const MyString& getPhoneNumber() const;
 
 	double getRating() const;
+	const Address& getAddress() const;
 	void rate(unsigned short rating);
 
 	const bool isAvailable() const;
 
-	void setAvailability(bool available) {
-		this->available = available;
-	}
+	void setAvailability(bool available);
 	void changeAddress(const Address& newAddress);
 	void acceptPayment(size_t orderId, double amount);
 };

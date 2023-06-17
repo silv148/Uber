@@ -30,20 +30,26 @@ void Order::printOrderForDriver() {
 	start.printAddress();
 	std::cout << "To: " << std::endl;
 	dest.printAddress();
+	std::cout << "Order ID: " << id << std::endl;
 }
 
 void Order::printOrderForClient() {
 	std::cout << std::endl;
-	if (!driver)
-		std::cout << "Your order has been accepted by:" << std::endl
+	if (hasDriver())
+		std::cout << "Order ID: " << id << std::endl
+			<< "Your order has been accepted by:" << std::endl
 			<< driver->getFirstName() << " " << driver->getLastName()
 			<< " with username: " << driver->getUsername() << std::endl
 			<< "Car number: " << driver->getCarNumber() << std::endl
 			<< "Phone number: " << driver->getPhoneNumber() << std::endl
-			<< "Driver\'s rating: " << driver->getRating() << std::endl << std::endl
+			<< "Driver\'s rating: " << std::setprecision(1) << driver->getRating() << std::endl << std::endl
 			<< "Your driver will arrive within " << minutes << " minutes!" << std::endl;
 	else
 		std::cout << "Your order has not been accepted yet:(";
+}
+
+bool Order::hasDriver() const {
+	return driver;
 }
 
 const User& Order::getClient() const {
@@ -80,4 +86,5 @@ Address Order::getDest() const {
 
 void Order::finishOrder() {
 	isFinished = true;
+	driver->setAvailability(true);
 }

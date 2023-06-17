@@ -31,9 +31,18 @@ const bool Driver::isAvailable() const {
 	return available;
 }
 
-double Driver::getRating() const
-{
-	return (double)rating.ratingSum / rating.ratingCount;
+double Driver::getRating() const {
+	double toReturn = 0.0;
+	rating.ratingCount > 0 ? toReturn = (double)rating.ratingSum / rating.ratingCount : toReturn;
+	return toReturn;
+}
+
+const Address& Driver::getAddress() const {
+	return address;
+}
+
+void Driver::setAvailability(bool available) {
+	this->available = available;
 }
 
 void Driver::changeAddress(const Address& newAddress) {

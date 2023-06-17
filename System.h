@@ -2,15 +2,21 @@
 #include "Container.hpp"
 #include "Client.h"
 #include "Order.h"
+#include "Vector.hpp"
 
 const short BUFF_MAX_SIZE = 1024;
+const double EPSILON = 0.000001;
 
 class System {
 private:
 	Container<User> users;
 	Container<Order> orders;
 	Container<Order> finishedOrders;
-	User* loggedUser;
+	User* loggedUser = nullptr;
+
+	static Driver* findNextDriver(Vector<Driver>& drivers, const Driver* driver);
+	static void sortDriversByDistance(const Order* order, Vector<Driver>& drivers);
+	Driver& getClosestDriver(Order* order);
 
 public:
 	static void printRules();
@@ -36,7 +42,7 @@ public:
 
 	void checkMessages() const;
 	void acceptOrder(size_t orderId, unsigned minutes);
-	void declineOrder(size_t orderId) const;
+	void declineOrder(size_t orderId);
 	void finishOrder(size_t orderId);
 };
 
