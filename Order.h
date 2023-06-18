@@ -7,6 +7,7 @@
 class Order {
 private:
 	bool isFinished = false;
+	bool cancelled = false;
 	unsigned minutes = 0;
 	size_t id = static_cast<size_t> (time(NULL));
 	size_t passengersCount = 0;
@@ -20,8 +21,14 @@ private:
 		const Address& start,
 		const Address& dest,
 		size_t passengersCount);
+
+	void copyFrom(const Order& other);
+	void free();
 public:
 	Order() = default;
+	Order(const Order& other);
+	Order& operator=(const Order& other);
+	~Order();
 
 	Order(User* client,
 		const Address& start,
@@ -38,15 +45,18 @@ public:
 
 	bool hasDriver() const;
 
-	const Client& getClient() const;
+	Client& getClient() const;
 	Client& getClient();
 	Driver& getDriver();
-	const Driver& getDriver() const;
+	Driver& getDriver() const;
 	unsigned getMinutes() const;
 	size_t getId() const;
 	size_t getPassengersCount() const;
 	Address getStart() const;
 	Address getDest() const;
 	double getPrice() const;
+	bool isCancelled() const;
+	
 	void finishOrder();
+	void cancelOrder();
 };

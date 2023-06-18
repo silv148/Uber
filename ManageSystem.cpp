@@ -74,6 +74,30 @@ void logoutUser(System& system) {
 }
 
 void createOrder(System& system) {
+	MyString startAddressName;
+	int x1 = 0;
+	int y1 = 0;
+	char startAdditionalInfo[1024];
+
+	MyString destAddressName;
+	int x2 = 0;
+	int y2 = 0;
+	char destAdditionalInfo[1024];
+
+	unsigned passengersCount = 0;
+
+	std::cin >> startAddressName >> x1 >> y1;
+	std::cin.getline(startAdditionalInfo, 1024);
+
+	std::cin >> destAddressName >> x2 >> y2;
+	std::cin.getline(destAdditionalInfo, 1024);
+
+	std::cin >> passengersCount;
+
+	
+	system.createOrder(Address(startAddressName, x1, y1, startAdditionalInfo),
+						Address(destAddressName, x2, y2, destAdditionalInfo),
+						passengersCount);
 }
 
 void checkOrder(System& system) {
@@ -112,7 +136,15 @@ void addMoney(System& system) {
 }
 
 void changeAddress(System& system) {
+	MyString destAddressName;
+	int x = 0;
+	int y = 0;
+	char destAdditionalInfo[1024];
 
+	std::cin >> destAddressName >> x >> y;
+	std::cin.getline(destAdditionalInfo, 1024);
+
+	system.changeAddress(Address(destAddressName, x, y, destAdditionalInfo));
 }
 
 void checkMessages(System& system) {
@@ -143,5 +175,9 @@ void finishOrder(System& system) {
 }
 
 void acceptPayment(System& system) {
+	double amount = 0;
+	std::cin >> amount;
+
+	system.finishOrder(amount);
 }
 

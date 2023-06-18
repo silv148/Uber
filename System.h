@@ -18,6 +18,9 @@ private:
 	Driver& getClosestDriver(Order* order);
 
 public:
+	System() = default;
+	System(const System & other) = delete;
+	System& operator=(const System & other) = delete;
 	~System();
 
 	static void printRules();
@@ -40,13 +43,13 @@ public:
 						   const Address& destination,
 						   size_t passengersCount = 1);
 	void rateDriver(const MyString& driverName, const unsigned rating);
-	void checkOrder(size_t orderId);
+	void checkOrder(size_t orderId) const;
 	void cancelOrder(size_t orderId);
 	void addMoney(double amount);
 	void pay(size_t orderId, double amount);
 
 	void changeAddress(const Address& address);
-	void checkMessages() const;
+	void checkMessages();
 	void acceptOrder(size_t orderId, unsigned minutes);
 	void declineOrder(size_t orderId);
 	void finishOrder(size_t orderId);

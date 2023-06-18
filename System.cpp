@@ -55,6 +55,15 @@ Driver& System::getClosestDriver(Order* order) {
 }
 
 System::~System() {
+	for (size_t i = 0; i < users.getSize(); i++)
+		delete users[i];
+
+	for (size_t i = 0; i < orders.getSize(); i++)
+		delete orders[i];
+	
+	for (size_t i = 0; i < finishedOrders.getSize(); i++)
+		delete finishedOrders[i];
+
 	delete loggedUser;
 }
 
@@ -82,7 +91,7 @@ void System::printCommandsForClients() {
 		<< "1. create_order <address_start_name, x, y, additional_info> " << std::endl
 		<< "<address_destination_name, x, y, additional_info> " << std::endl 
 		<< "<passengers_count>" << std::endl
-		<< "	     *Note that passengers_count and additional_info are optional" << std::endl << std::endl
+		<< "	     *Note that coordinates are whole numbers!" << std::endl << std::endl
 		<< "2. check_order <ID> " << std::endl
 		<< "         *ID is a whole number which you will recieve rignt after creating an order" << std::endl << std::endl
 		<< "3. cancel_order <ID> " << std::endl << std::endl
@@ -224,7 +233,7 @@ void System::createOrder(const Address& currentAddres,
 			throw std::logic_error("A driver cannot create orders!");
 
 		static Order order;
-		order = Order(loggedUser, currentAddres, destination, passengersCount);
+		order = Order(dynamic_cast<Client*>(loggedUser), currentAddres, destination, passengersCount);
 		static Driver driver;
 
 		driver = getClosestDriver(&order);
@@ -263,7 +272,7 @@ void System::rateDriver(const MyString& driverUsername, const unsigned rating) {
 	}
 }
 
-void System::checkOrder(size_t orderId) {
+void System::checkOrder(size_t orderId) const {
 	try{
 		if (!loggedUser)
 			throw std::logic_error("Log in to have access to the system!");
@@ -309,7 +318,7 @@ void System::cancelOrder(size_t orderId) {
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getClient().getUsername() == loggedUser->getUsername()
 				&& orders[i]->getId() == orderId) {
-				orders.popAt(i);
+				orders[i]->cancelOrder();
 				return;
 			}
 		}
@@ -359,10 +368,15 @@ void System::pay(size_t orderId, double amount) {
 
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
-				orders[i]->setPrice(amount);
-				orders[i]->getClient().pay(amount);
+				if (orders[i]->getClient().getUsername() == loggedUser->getUsername()) {
+					orders[i]->setPrice(amount);
+					orders[i]->getClient().pay(amount);
+				}
+				else throw std::logic_error("You have no rights over this order!");
 			}
 		}
+
+		throw std::logic_error("There is no order with this ID");
 
 	}
 	catch (const std::logic_error& e) {
@@ -397,7 +411,7 @@ void System::changeAddress(const Address& address) {
 	}
 }
 
-void System::checkMessages() const {
+void System::checkMessages() {
 	try {
 		if (!loggedUser)
 			throw std::logic_error("Log in to have access to the system!");
@@ -408,15 +422,29 @@ void System::checkMessages() const {
 		bool hasMessages = false;
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (&orders[i]->getDriver() && orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
-				std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName() 
-					<< " has made an order from: " << std::endl;
-				orders[i]->getStart().printAddress();
-				std::cout << "To: " << std::endl;
-				orders[i]->getDest().printAddress();
-				std::cout << std::endl
-					<< "---------------------------------------------------------------------------------"
-					<< std::endl;
-				hasMessages = true;
+				if (orders[i]->isCancelled()) {
+					std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName()
+						<< " has cancelled order " << orders[i]->getId() << " from: " << std::endl;
+					orders[i]->getStart().printAddress();
+					std::cout << "To: " << std::endl;
+					orders[i]->getDest().printAddress();
+					std::cout << std::endl
+						<< "---------------------------------------------------------------------------------"
+						<< std::endl;
+					hasMessages = true;
+					orders.popAt(i);
+				}
+				else {
+					std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName()
+						<< " has made an order from: " << std::endl;
+					orders[i]->getStart().printAddress();
+					std::cout << "To: " << std::endl;
+					orders[i]->getDest().printAddress();
+					std::cout << std::endl
+						<< "---------------------------------------------------------------------------------"
+						<< std::endl;
+					hasMessages = true;
+				}
 			}
 		}
 
@@ -446,15 +474,27 @@ void System::acceptOrder(size_t orderId, unsigned minutes) {
 			throw std::logic_error("You cannot accept other orders yet!");
 
 		for (size_t i = 0; i < orders.getSize(); i++) {
-			if (orders[i]->getId() == orderId) {
-				orders[i]->setDriver(&driver);
-				orders[i]->setMinutes(minutes);
+			if (orders[i]->getId() == orderId && !orders[i]->isCancelled()) {
+				if (loggedUser->getUsername() != orders[i]->getDriver().getUsername()) {
+					orders[i]->setDriver(&driver);
+					orders[i]->setMinutes(minutes);
+					driver.setAvailability(false);
 
-				driver.changeAddress(orders[i]->getStart());
-				driver.setAvailability(false);
-
-				std::cout << "Order " << orders[i]->getId() << " has been successfully accepted!";
-				return;
+					std::cout << "Order " << orders[i]->getId() << " has been successfully accepted!";
+					return;
+				}
+				else throw std::logic_error("You have no rights over this order!");
+			}
+			else{
+				std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName()
+					<< " has cancelled order " << orders[i]->getId() << " from: " << std::endl;
+				orders[i]->getStart().printAddress();
+				std::cout << "To: " << std::endl;
+				orders[i]->getDest().printAddress();
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				orders.popAt(i);
 			}
 		}
 
@@ -462,10 +502,13 @@ void System::acceptOrder(size_t orderId, unsigned minutes) {
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
+		return;
 	}
 }
 
@@ -479,11 +522,14 @@ void System::declineOrder(size_t orderId) {
 
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
-				static Driver driver;
+				if (orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
+					static Driver driver;
 
-				driver = getClosestDriver(orders[i]);
-				orders[i]->setDriver(&driver);
-				return;
+					driver = getClosestDriver(orders[i]);
+					orders[i]->setDriver(&driver);
+					return;
+				}
+				else throw std::logic_error("You have no rights over this order!");
 			}
 		}
 
@@ -491,12 +537,15 @@ void System::declineOrder(size_t orderId) {
 	}
 	catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	}
 	catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	}
 	catch (...) {
 		std::cout << "Unknown error." << std::endl;
+		return;
 	}
 }
 
@@ -510,24 +559,39 @@ void System::finishOrder(size_t orderId) {
 			throw std::logic_error("This is an invalid command for clients!");
 
 		for (size_t i = 0; i < orders.getSize(); i++) {
-			if (orders[i]->getId()) {
-				if (orderId && orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
+			if (orders[i]->getId() == orderId && !orders[i]->isCancelled()) {
+				if (orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
 					orders[i]->getDriver().changeAddress(orders[i]->getDest());
 					orders[i]->finishOrder();
 					finishedOrders.pushBack(orders[i]);
 					orders.popAt(i);
-				} 
+				}
 				else throw std::logic_error("You have no rights over this order!");
 			}
-			else throw std::logic_error("There is no order with this ID!");
+			else if (orders[i]->getId() == orderId && orders[i]->isCancelled()) {
+				std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName()
+					<< " has cancelled order " << orders[i]->getId() << " from: " << std::endl;
+				orders[i]->getStart().printAddress();
+				std::cout << "To: " << std::endl;
+				orders[i]->getDest().printAddress();
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				orders.popAt(i);
+			}
+			
 		}
+		throw std::logic_error("There is no order with this ID!");
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
+		return;
 	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
+		return;
 	}
 }
 
@@ -539,19 +603,19 @@ void System::acceptPayment(size_t orderId, double amount) {
 		if (!loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for clients!");
 
-		for (size_t i = 0; i < orders.getSize(); i++)
-			if (orders[i]->getId())
-				if (orderId && orders[i]->getDriver().getUsername() == loggedUser->getUsername())
-					orders[i]->getDriver().acceptPayment(amount);
+		for (size_t i = 0; i < finishedOrders.getSize(); i++)
+			if (finishedOrders[i]->getId() == orderId)
+				if(finishedOrders[i]->getDriver().getUsername() == loggedUser->getUsername())
+					finishedOrders[i]->getDriver().acceptPayment(amount);
+				else throw std::logic_error("You have no rights over this order!");
+		
+		throw std::logic_error("There is no order with this ID!");
 
-	}
-	catch (const std::logic_error& e) {
+	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
-	}
-	catch (...) {
+	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
 	}
 }

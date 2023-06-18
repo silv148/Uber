@@ -1,5 +1,22 @@
 #include "Order.h"
 
+Order::Order(const Order& other) {
+	copyFrom(other);
+}
+
+Order& Order::operator=(const Order& other) {
+	if (this != &other) {
+		free();
+		copyFrom(other);
+	}
+
+	return *this;
+}
+
+Order::~Order() {
+	free();
+}
+
 Order::Order(User* client, const Address& start, const Address& dest, size_t passengersCount) {
 	setOrder(client, start, dest, passengersCount);
 }
@@ -26,6 +43,23 @@ void Order::setOrder(User* client,
 	this->dest = dest;
 	this->passengersCount = passengersCount;
 
+}
+
+void Order::copyFrom(const Order& other) {
+	id = other.getId();
+	minutes = other.getMinutes();
+	passengersCount = other.getPassengersCount();
+	price = other.price;
+	start = other.getStart();
+	dest = other.getDest();
+	client = &other.getClient();
+	driver = &other.getDriver();
+	isFinished = other.isFinished;
+}
+
+void Order::free() {
+	delete client;
+	delete driver;
 }
 
 void Order::printOrderForDriver() {
@@ -56,7 +90,7 @@ bool Order::hasDriver() const {
 	return driver;
 }
 
-const Client& Order::getClient() const {
+Client& Order::getClient() const {
 	return *client;
 }
 
@@ -64,7 +98,7 @@ Client& Order::getClient() {
 	return *client;
 }
 
-const Driver& Order::getDriver() const {
+Driver& Order::getDriver() const {
 	return *driver;
 }
 
@@ -93,10 +127,18 @@ Address Order::getDest() const {
 }
 
 double Order::getPrice() const {
-	return getPrice();
+	return price;
+}
+
+bool Order::isCancelled() const {
+	return cancelled;
 }
 
 void Order::finishOrder() {
 	isFinished = true;
 	driver->setAvailability(true);
+}
+
+void Order::cancelOrder() {
+	cancelled = true;
 }
