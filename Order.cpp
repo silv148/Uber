@@ -17,7 +17,7 @@ Order::~Order() {
 	free();
 }
 
-Order::Order(User* client, const Address& start, const Address& dest, size_t passengersCount) {
+Order::Order(Client* client, const Address& start, const Address& dest, size_t passengersCount) {
 	setOrder(client, start, dest, passengersCount);
 }
 
@@ -29,16 +29,20 @@ void Order::setDriver(Driver* driver) {
 	this->driver = driver;
 }
 
+void Order::setClient(Client* client) {
+	this->client = client;
+}
+
 void Order::setPrice(double amount) {
 	this->price = amount;
 }
 
-void Order::setOrder(User* client,
+void Order::setOrder(Client* client,
 					const Address& start,
 					const Address& dest,
 					size_t passengersCount) 
 {
-	this->client = dynamic_cast<Client*>(client);
+	this->client = client;
 	this->start = start;
 	this->dest = dest;
 	this->passengersCount = passengersCount;
@@ -73,7 +77,11 @@ void Order::printOrderForDriver() {
 
 void Order::printOrderForClient() {
 	std::cout << std::endl;
-	if (hasDriver())
+	if (hasDriver() && driver->isAvailable())
+		std::cout << "Order ID: " << id << std::endl
+		<< "Your order is still in process!" << std::endl;
+
+	else if(hasDriver() && !driver->isAvailable())
 		std::cout << "Order ID: " << id << std::endl
 			<< "Your order has been accepted by:" << std::endl
 			<< driver->getFirstName() << " " << driver->getLastName()

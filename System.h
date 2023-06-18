@@ -8,7 +8,8 @@ const double EPSILON = 0.000001;
 
 class System {
 private:
-	Vector<User*> users;
+	Vector<Client*> clients;
+	Vector<Driver*> drivers;
 	Vector<Order*> orders;
 	Vector<Order*> finishedOrders;
 	User* loggedUser = nullptr;
@@ -37,7 +38,8 @@ public:
 
 	bool loginUser(const MyString& username, const MyString& password);
 	void logoutUser();
-	User* getUserByUsername(const MyString& username);
+	Client* getClientByUsername(const MyString& username);
+	Driver* getDriverByUsername(const MyString& username);
 	 
 	void createOrder(const Address& currentAddres,
 						   const Address& destination,

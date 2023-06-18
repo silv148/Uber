@@ -17,7 +17,7 @@ private:
 	Client* client = nullptr;
 	Driver* driver = nullptr;
 
-	void setOrder(User* client,
+	void setOrder(Client* client,
 		const Address& start,
 		const Address& dest,
 		size_t passengersCount);
@@ -30,7 +30,7 @@ public:
 	Order& operator=(const Order& other);
 	~Order();
 
-	Order(User* client,
+	Order(Client* client,
 		const Address& start,
 		const Address& dest,
 		size_t passengersCount);
@@ -38,6 +38,7 @@ public:
 
 	void setMinutes(unsigned minutes);
 	void setDriver(Driver* driver);
+	void setClient(Client* client);
 	void setPrice(double amount);
 
 	void printOrderForDriver();

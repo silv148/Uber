@@ -2,6 +2,7 @@
 
 void run() {
 	System system;
+	system.printRules();
 
 	MyString command;
 	std::cin >> command;
@@ -45,28 +46,27 @@ void run() {
 
 void registerNewUser(System& system) {
 	MyString role;
-	MyString username; 
+	MyString username;
 	MyString password;
 	MyString firstName;
 	MyString lastName;
 
-	std::cin >> role;
-	std::cin >> username;
-	std::cin >> password;
-	std::cin >> firstName;
-	std::cin >> lastName;
-
-	system.registerUser(role, username, password, firstName, lastName);
+	do {
+		std::cin >> role;
+		std::cin >> username;
+		std::cin >> password;
+		std::cin >> firstName;
+		std::cin >> lastName;
+	} while(!system.registerUser(role, username, password, firstName, lastName));
 }
 
 void loginUser(System& system) {
 	MyString username;
 	MyString password;
-
-	std::cin >> username;
-	std::cin >> password;
-
-	system.loginUser(username, password);
+	do {
+		std::cin >> username;
+		std::cin >> password;
+	} while(!system.loginUser(username, password));
 }
 
 void logoutUser(System& system) {

@@ -1,41 +1,48 @@
 #include "System.h"
 #include <sstream>
+#include <algorithm>
+
+namespace {
+	template <typename T, typename Compare>
+	void selectionSort(Vector<T>& vec, Compare comp) {
+		for (size_t i = 0; i < vec.getSize() - 1; ++i) {
+			size_t minIndex = i;
+			for (size_t j = i + 1; j < vec.getSize(); ++j) {
+				if (comp(vec[j], vec[minIndex])) {
+					minIndex = j;
+				}
+			}
+			if (minIndex != i) {
+				std::swap(vec[i], vec[minIndex]);
+			}
+		}
+	}
+}
 
 Driver& System::findNextDriver(Vector<Driver*>& drivers, const Driver* driver) {
 	if (drivers.getSize() == 0)
 		throw std::logic_error("There are no available drivers!");
 
 	for (size_t i = 0; i < drivers.getSize() - 1; i++)
-		if (drivers[i]->getUsername() == driver->getUsername()) 
+		if (drivers[i]->getUsername() == driver->getUsername() && drivers[i+1]->isAvailable())
 			return *(drivers[i + 1]);
 
 	throw std::logic_error("There are no available drivers!");
 }
 
 void System::sortDriversByDistance(const Order* order, Vector<Driver*>& drivers) {
-	for (size_t i = 0; i < drivers.getSize(); i++)
-		for (size_t j = i + 1; j < drivers.getSize(); j++)
-			if (order->getStart().getDist(drivers[i]->getAddress()) - order->getStart().getDist(drivers[j]->getAddress()) > EPSILON)
-				std::swap(drivers[i], drivers[j]);
+	selectionSort(drivers, [&](Driver* a, Driver* b) {
+		return order->getStart().getDist(a->getAddress()) < order->getStart().getDist(b->getAddress());
+		});
 }
 
 Driver& System::getClosestDriver(Order* order) {
-	Vector<Driver*> drivers;
-
-	for (size_t i = 0; i < users.getSize(); i++) {
-		if (users[i]->userIsDriver()) {
-			Driver* driver = static_cast<Driver*>(users[i]);
-			driver->isAvailable() ? std::cout <<"yes" << std::endl : std::cout << "no" << std::endl;
-			if (driver->isAvailable()) {
-				drivers.pushBack(driver);
-				std::cout << drivers[drivers.getSize() - 1]->getUsername() << std::endl;
-			}
-		}
-	}
-
-	sortDriversByDistance(order, drivers);
-
 	try {
+		if (drivers.getSize() == 0)
+			throw std::logic_error("There are no availabe drivers!");
+
+		sortDriversByDistance(order, drivers);
+
 		if (order->hasDriver())
 			return findNextDriver(drivers, &order->getDriver());
 		else
@@ -48,15 +55,14 @@ Driver& System::getClosestDriver(Order* order) {
 	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
 	}
-
-	// Return a default driver or handle the error case appropriately
-	static Driver defaultDriver;
-	return defaultDriver;
 }
 
 System::~System() {
-	for (size_t i = 0; i < users.getSize(); i++)
-		delete users[i];
+	for (size_t i = 0; i < clients.getSize(); i++)
+		delete clients[i];
+
+	for (size_t i = 0; i < drivers.getSize(); i++)
+		delete drivers[i];
 
 	for (size_t i = 0; i < orders.getSize(); i++)
 		delete orders[i];
@@ -117,11 +123,6 @@ void System::printCommandsForDrivers() {
 		<< "Have fun using our system :)" << std::endl << std::endl;
 }
 
-void System::printUsers() {
-	for (size_t i = 0; i < users.getSize(); i++)
-		std::cout << users[i]->getUsername() << std::endl;
-}
-
 void System::printOrders() {
 	for (size_t i = 0; i < orders.getSize(); i++)
 		std::cout << std::endl << orders[i]->getId() << " -- "
@@ -140,63 +141,82 @@ bool System::registerUser(const MyString& role,
 		if (loggedUser)
 			throw std::logic_error("You cannot register from someone\'s profine!");
 
-		if (getUserByUsername(username))
+		if (getClientByUsername(username) || getDriverByUsername(username))
 			throw std::logic_error("Username already exists. Please choose a different username.");
 
 		//role.toLower();
 
-		if (role == "client")
-			users.pushBack(new Client(username, password, firstName, lastName));
+		if (role == "client") {
+			clients.pushBack(new Client(username, password, firstName, lastName));
+			std::cout << "New user added to the system: " << clients[clients.getSize() - 1]->getUsername() << std::endl;
+
+		}
 		else if (role == "driver") {
 			MyString carNum;
 			MyString phone;
 			std::cin >> carNum >> phone;
-			users.pushBack(new Driver(username, password, firstName, lastName, carNum, phone));
+			drivers.pushBack(new Driver(username, password, firstName, lastName, carNum, phone));
+			std::cout << "New user added to the system: " << drivers[drivers.getSize() - 1]->getUsername() << std::endl;
 		}
-		std::cout << "New user added to the system: " << users[users.getSize()-1]->getUsername() << std::endl;
-
-		for (size_t i = 0; i < users.getSize(); i++)
-			std::cout << users[i]->getUsername();
+		else throw std::logic_error("There in no such role!");
 
 		return true;
 
-	} catch (const std::logic_error& e) {
+	}
+	catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
-	} catch (std::exception e) {
+		return false;
+	}
+	catch (std::exception e) {
 		std::cout << e.what() << std::endl;
-	} catch (...) {
+		return false;
+	}
+	catch (...) {
 		std::cout << "Unknown error." << std::endl;
+		return false;
 	}
 }
 
 bool System::loginUser(const MyString& username, const MyString& password) {
 	try {
 		if (loggedUser)
-			throw std::logic_error("You cannot register from someone\'s profine!");
+			throw std::logic_error("You cannot login from someone\'s profile!");
 
-		User* user = getUserByUsername(username);
-
-		if (user) {
-			if (user->getPassword() == password) {
+		if (getClientByUsername(username)) {
+			if (getClientByUsername(username)->getPassword() == password) {
+				loggedUser = getClientByUsername(username);
 				system("cls");
-
-				loggedUser = user;
-				std::cout << "Login successful. Welcome, " << user->getUsername() << "!" << std::endl << std::endl;
-				user->userIsDriver() ? printCommandsForDrivers() : printCommandsForClients();
+				std::cout << "Login successful. Welcome, " << username << "!" << std::endl << std::endl;
+				printCommandsForClients();
 
 				return true;
 			}
+			else {
+				throw std::logic_error("Invalid password");
+				return false;
+			}
 		}
-		else
-			std::cout << "Invalid username." << std::endl;
+		if (getDriverByUsername(username)) {
+			if (getDriverByUsername(username)->getPassword() == password) {
+				loggedUser = getDriverByUsername(username);
+				system("cls");
+				std::cout << "Login successful. Welcome, " << username << "!" << std::endl << std::endl;
+				printCommandsForDrivers();
 
-		std::cout << "Invalid password." << std::endl;
-		delete user;
+				return true;
+			}
+			else {
+				throw std::logic_error("Invalid password");
+				return false;
+			}
+		}
+
+		throw std::logic_error("No user with this username and password exists!");
 		return false;
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
-	} catch (std::exception e) {
+	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
 	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
@@ -204,42 +224,72 @@ bool System::loginUser(const MyString& username, const MyString& password) {
 }
 
 void System::logoutUser() {
-	if (loggedUser) {
+	try{
+		std::cout << loggedUser->getUsername() << std::endl;
+
+		if (!loggedUser)
+			throw std::logic_error("No user is currently logged in!");
+
 		std::cout << "Logout successful. Goodbye, " << loggedUser->getUsername() << std::endl;
 		loggedUser = nullptr;
 		system("cls");
+	} catch (const std::logic_error& e) {
+		std::cout << e.what() << std::endl;
+	} catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown error." << std::endl;
 	}
-	else
-		std::cout << "No user is currently logged in." << std::endl;
 }
 
-User* System::getUserByUsername(const MyString& username) {
-	for (size_t i = 0; i < users.getSize(); i++) 
-		if (users[i]->getUsername() == username) 
-			return users[i];
-
-	return nullptr;
-}
-
-void System::createOrder(const Address& currentAddres, 
-								const Address& destination, 
-								size_t passengersCount) 
-{
+Client* System::getClientByUsername(const MyString& username) {
 	try{
+		for (size_t i = 0; i < clients.getSize(); i++) 
+		if (clients[i]->getUsername() == username) 
+			return clients[i];
+
+		throw std::logic_error("No driver with this username was found");
+
+	} catch (const std::logic_error& e) {
+		return nullptr;
+	} catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
+Driver* System::getDriverByUsername(const MyString& username) {
+	try {
+		for (size_t i = 0; i < drivers.getSize(); i++)
+			if (drivers[i]->getUsername() == username)
+				return drivers[i];
+
+		throw std::logic_error("No driver with this username was found");
+
+	} catch (const std::logic_error& e) {
+		return nullptr;
+	} catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
+void System::createOrder(const Address& currentAddress, const Address& destination, size_t passengersCount) {
+	try {
 		if (!loggedUser)
 			throw std::logic_error("Log in to have access to the system!");
 
 		if (loggedUser->userIsDriver())
 			throw std::logic_error("A driver cannot create orders!");
 
-		static Order order;
-		order = Order(dynamic_cast<Client*>(loggedUser), currentAddres, destination, passengersCount);
-		static Driver driver;
+		if (!getClientByUsername(loggedUser->getUsername()))
+			throw std::logic_error("Failed to retrieve client information!");
 
-		driver = getClosestDriver(&order);
-		order.setDriver(&driver);
-		std::cout << order.getId() << std::endl << order.getDriver().getUsername() << std::endl;
-		orders.pushBack(&order);
+		orders.pushBack(new Order(getClientByUsername(loggedUser->getUsername()), currentAddress, destination, passengersCount));
+		orders[orders.getSize() - 1]->setDriver(&getClosestDriver(orders[orders.getSize() - 1]));
+		std::cout << orders[orders.getSize() - 1]->getId() << std::endl << orders[orders.getSize() - 1]->getDriver().getUsername() << std::endl << std::endl;
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -322,7 +372,7 @@ void System::cancelOrder(size_t orderId) {
 				return;
 			}
 		}
-		std::cout << "You have no orders with such ID";
+		throw std::logic_error("You have no orders with such ID");
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -341,11 +391,10 @@ void System::addMoney(double amount) {
 		if (loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for drivers!");
 
-		static Client client;
-		client = dynamic_cast<Client&>(*loggedUser);
+		if (!getClientByUsername(loggedUser->getUsername()))
+			throw std::logic_error("Failed to retrieve client information!");
 
-		client.addMoney(amount);
-
+		getClientByUsername(loggedUser->getUsername())->addMoney(amount);
 	}
 	catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -366,17 +415,21 @@ void System::pay(size_t orderId, double amount) {
 		if (loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for drivers!");
 
+		bool orderFound = false;
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
 				if (orders[i]->getClient().getUsername() == loggedUser->getUsername()) {
 					orders[i]->setPrice(amount);
 					orders[i]->getClient().pay(amount);
+					orderFound = true;
+					break;
 				}
 				else throw std::logic_error("You have no rights over this order!");
 			}
 		}
 
-		throw std::logic_error("There is no order with this ID");
+		if (!orderFound)
+			throw std::logic_error("There is no order with this ID");
 
 	}
 	catch (const std::logic_error& e) {
@@ -398,9 +451,10 @@ void System::changeAddress(const Address& address) {
 		if (!loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for clients!");
 
-		static Driver driver;
-		driver = dynamic_cast<Driver&>(*loggedUser);
-		driver.changeAddress(address);
+		if (!getDriverByUsername(loggedUser->getUsername()))
+			throw std::logic_error("There is no driver with such username!");
+
+		getDriverByUsername(loggedUser->getUsername())->changeAddress(address);
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -419,6 +473,7 @@ void System::checkMessages() {
 		if (!loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for clients!");
 
+		std::cout << std::endl;
 		bool hasMessages = false;
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (&orders[i]->getDriver() && orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
@@ -440,7 +495,8 @@ void System::checkMessages() {
 					orders[i]->getStart().printAddress();
 					std::cout << "To: " << std::endl;
 					orders[i]->getDest().printAddress();
-					std::cout << std::endl
+					std::cout << std::endl 
+						<<"Order ID: " << orders[i]->getId()
 						<< "---------------------------------------------------------------------------------"
 						<< std::endl;
 					hasMessages = true;
@@ -448,7 +504,7 @@ void System::checkMessages() {
 			}
 		}
 
-		if(!hasMessages)
+		if (!hasMessages)
 			std::cout << "You have no new messages!";
 
 	} catch (const std::logic_error& e) {
@@ -468,24 +524,18 @@ void System::acceptOrder(size_t orderId, unsigned minutes) {
 		if (!loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for clients!");
 
-		static Driver driver;
-		driver = dynamic_cast<Driver&>(*loggedUser);
-		if(!driver.isAvailable())
-			throw std::logic_error("You cannot accept other orders yet!");
-
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId && !orders[i]->isCancelled()) {
-				if (loggedUser->getUsername() != orders[i]->getDriver().getUsername()) {
-					orders[i]->setDriver(&driver);
+				if (loggedUser->getUsername() == orders[i]->getDriver().getUsername() && orders[i]->getDriver().isAvailable()) {
 					orders[i]->setMinutes(minutes);
-					driver.setAvailability(false);
+					orders[i]->getDriver().setAvailability(false);
 
-					std::cout << "Order " << orders[i]->getId() << " has been successfully accepted!";
+					std::cout << "Order " << orders[i]->getId() << " has been successfully accepted!" <<std::endl;
 					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
 			}
-			else{
+			else if(orders[i]->getId() == orderId) {
 				std::cout << orders[i]->getClient().getFirstName() << " " << orders[i]->getClient().getLastName()
 					<< " has cancelled order " << orders[i]->getId() << " from: " << std::endl;
 				orders[i]->getStart().printAddress();
@@ -512,6 +562,7 @@ void System::acceptOrder(size_t orderId, unsigned minutes) {
 	}
 }
 
+
 void System::declineOrder(size_t orderId) {
 	try {
 		if (!loggedUser)
@@ -523,10 +574,8 @@ void System::declineOrder(size_t orderId) {
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
 				if (orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
-					static Driver driver;
-
-					driver = getClosestDriver(orders[i]);
-					orders[i]->setDriver(&driver);
+					Driver* driver = &getClosestDriver(orders[i]);
+					orders[i]->setDriver(driver);
 					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
@@ -534,21 +583,18 @@ void System::declineOrder(size_t orderId) {
 		}
 
 		throw std::logic_error("There is no order with this ID");
-	}
-	catch (const std::logic_error& e) {
+
+	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
 		return;
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
 		return;
-	}
-	catch (...) {
+	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
 		return;
 	}
 }
-
 
 void System::finishOrder(size_t orderId) {
 	try {
@@ -565,6 +611,7 @@ void System::finishOrder(size_t orderId) {
 					orders[i]->finishOrder();
 					finishedOrders.pushBack(orders[i]);
 					orders.popAt(i);
+					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
 			}
@@ -578,9 +625,10 @@ void System::finishOrder(size_t orderId) {
 					<< "---------------------------------------------------------------------------------"
 					<< std::endl;
 				orders.popAt(i);
+				return;
 			}
-			
 		}
+
 		throw std::logic_error("There is no order with this ID!");
 
 	} catch (const std::logic_error& e) {

@@ -8,13 +8,6 @@ private:
 	T* data;
 	size_t size;
 	size_t capacity;
-
-	void copy(const Vector&);
-	void free();
-	void move(Vector&&);
-
-	size_t calculateCapacity(const size_t) const;
-	void resize(const size_t);
 public:
 	Vector();
 	Vector(const Vector<T>&);
@@ -30,13 +23,20 @@ public:
 	void pushBack(T&& n);
 	void pushAt(const T&, const size_t);
 	void pushAt(T&&, const size_t);
-	void popBack();
-	void popAt(const size_t);
+	T& popBack();
+	T& popAt(const size_t);
 	T& operator[](const size_t);
 	const T& operator[](const size_t) const;
 	bool empty() const;
 	void clear();
 	void swap(const Vector<T>&);
+private:
+	void copy(const Vector&);
+	void free();
+	void move(Vector&&);
+
+	size_t calculateCapacity(const size_t) const;
+	void resize(const size_t);
 };
 
 template <typename T>
@@ -97,7 +97,7 @@ void Vector<T>::pushBack(const T& element) {
 	if (size + 1 > capacity)
 		resize(size + 1);
 
-	data[size++] = element;
+	data[size++] = std::move(element);
 }
 
 
@@ -134,22 +134,24 @@ void Vector<T>::pushAt(T&& element, const size_t index) {
 }
 
 template <typename T>
-void Vector<T>::popBack() {
+T& Vector<T>::popBack() {
 	if (empty())
 		throw "Vector is empty";
 
-	data[--size];
+	return data[--size];
 }
 
 template <typename T>
-void Vector<T>::popAt(size_t index) {
+T& Vector<T>::popAt(size_t index) {
 	if (index >= size)
 		throw "Invalid index";
 
+	T temp = data[index];
 	for (size_t i = index; i < size - 1; i++)
 		data[i] = data[i + 1];
 
 	size--;
+	return temp;
 }
 
 template <typename T>
