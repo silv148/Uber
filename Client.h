@@ -14,5 +14,9 @@ public:
 	void addMoney(double amount);
 
 	User* clone() const override;
+	void saveToFile(std::ofstream& file) override;
+	void readFromFile(std::istream& file) override;
+	static void splitString(const char* buff, size_t& buffInd, MyString& str);
+	
 };
 

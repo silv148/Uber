@@ -1,6 +1,7 @@
 #include "System.h"
 #include <sstream>
 #include <algorithm>
+#include <fstream>
 
 namespace {
 	template <typename T, typename Compare>
@@ -17,6 +18,52 @@ namespace {
 			}
 		}
 	}
+}
+
+void System::saveToFile(std::ofstream& file) {
+	file << clients.getSize() << std::endl;
+	for (size_t i = 0; i < clients.getSize(); i++) {
+		clients[i]->saveToFile(file);
+		file << std::endl;
+	}
+
+	file << drivers.getSize() << std::endl;
+	for (size_t i = 0; i < drivers.getSize(); i++) {
+		drivers[i]->saveToFile(file);
+		file << std::endl;
+	}
+
+	file << orders.getSize() << std::endl;
+	for (size_t i = 0; i < orders.getSize(); i++) {
+		orders[i]->saveToFile(file);
+		file << std::endl;
+	}
+
+	file << finishedOrders.getSize() << std::endl;
+	for (size_t i = 0; i < finishedOrders.getSize(); i++) {
+		finishedOrders[i]->saveToFile(file);
+		file << std::endl;
+	}
+}
+
+void System::readFromFile(std::istream& file) {
+	size_t clientsSize, driversSize, ordersSize, finishedOrdersSize;
+
+	file >> clientsSize;
+	for (size_t i = 0; i < clientsSize; i++)
+		clients[i]->readFromFile(file);
+
+	file >> driversSize ;
+	for (size_t i = 0; i < driversSize; i++)
+		drivers[i]->readFromFile(file);
+
+	file >> ordersSize;
+	for (size_t i = 0; i < ordersSize; i++)
+		clients[i]->readFromFile(file);
+
+	file >> finishedOrdersSize;
+	for (size_t i = 0; i < finishedOrdersSize; i++)
+		clients[i]->readFromFile(file);
 }
 
 Driver& System::findNextDriver(Vector<Driver*>& drivers, const Driver* driver) {
@@ -57,7 +104,25 @@ Driver& System::getClosestDriver(Order* order) {
 	}
 }
 
+//System::System() {
+//	std::ifstream inFile("file.txt");
+//	if (!inFile) {
+//		std::cerr << "Error";
+//		return;
+//	}
+//	readFromFile(inFile);
+//}
+
 System::~System() {
+	/*std::ofstream outFile("file.txt");
+	
+	if (!outFile) {
+		std::cerr << "Problem with oppening file ";
+		return;
+	}
+	
+	saveToFile(outFile);*/
+
 	for (size_t i = 0; i < clients.getSize(); i++)
 		delete clients[i];
 
@@ -101,8 +166,8 @@ void System::printCommandsForClients() {
 		<< "2. check_order <ID> " << std::endl
 		<< "         *ID is a whole number which you will recieve rignt after creating an order" << std::endl << std::endl
 		<< "3. cancel_order <ID> " << std::endl << std::endl
-		<< "4. pay <order_ID> <amount>" << std::endl << std::endl
-		<< "5. add_money <amount>" << std::endl << std::endl
+		<< "4. pay <order_ID> <amount>" << std::endl
+		<< "5. add_money <amount>" << std::endl
 		<< "         *Note that you start with an empty bank account!" << std::endl << std::endl
 		<< "Have fun using our system :)" << std::endl << std::endl;
 }
@@ -115,20 +180,12 @@ void System::printCommandsForDrivers() {
 		<< "	     *Shows all orders which have been sent to you" << std::endl << std::endl
 		<< "3. accept_order <id> <minutes>" << std::endl
 		<< "         *You cannot accept other orders until finishing the order you have accepted" << std::endl << std::endl
-		<< "4. decline_order <ID> " << std::endl << std::endl
-		<< "5. finish_order <id> " << std::endl << std::endl
+		<< "4. decline_order <ID> " << std::endl
+		<< "5. finish_order <id> " << std::endl
 		<< "         *It automatically changes your address to order\'s destination!" << std::endl << std::endl
-		<< "6. accept_payment <id> <amount>" << std::endl << std::endl
+		<< "6. accept_payment <id> <amount>" << std::endl
 		<< "         *Note that you start with an empty bank account!" << std::endl << std::endl
 		<< "Have fun using our system :)" << std::endl << std::endl;
-}
-
-void System::printOrders() {
-	for (size_t i = 0; i < orders.getSize(); i++)
-		std::cout << std::endl << orders[i]->getId() << " -- "
-			<< orders[i]->getClient().getUsername() << " -- "
-			<< orders[i]->getDriver().getUsername() << " -- "
-			<< orders[i]->getDest().getName() << std::endl;
 }
 
 bool System::registerUser(const MyString& role,
@@ -144,10 +201,10 @@ bool System::registerUser(const MyString& role,
 		if (getClientByUsername(username) || getDriverByUsername(username))
 			throw std::logic_error("Username already exists. Please choose a different username.");
 
-		//role.toLower();
-
 		if (role == "client") {
 			clients.pushBack(new Client(username, password, firstName, lastName));
+			system("cls");
+			printRules();
 			std::cout << "New user added to the system: " << clients[clients.getSize() - 1]->getUsername() << std::endl;
 
 		}
@@ -156,22 +213,21 @@ bool System::registerUser(const MyString& role,
 			MyString phone;
 			std::cin >> carNum >> phone;
 			drivers.pushBack(new Driver(username, password, firstName, lastName, carNum, phone));
+			system("cls");
+			printRules();
 			std::cout << "New user added to the system: " << drivers[drivers.getSize() - 1]->getUsername() << std::endl;
 		}
 		else throw std::logic_error("There in no such role!");
-
+		
 		return true;
 
-	}
-	catch (const std::logic_error& e) {
+	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
 		return false;
-	}
-	catch (std::exception e) {
+	} catch (std::exception e) {
 		std::cout << e.what() << std::endl;
 		return false;
-	}
-	catch (...) {
+	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
 		return false;
 	}
@@ -230,9 +286,9 @@ void System::logoutUser() {
 		if (!loggedUser)
 			throw std::logic_error("No user is currently logged in!");
 
-		std::cout << "Logout successful. Goodbye, " << loggedUser->getUsername() << std::endl;
 		loggedUser = nullptr;
 		system("cls");
+		printRules();
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
 	} catch (const std::exception& e) {
@@ -248,7 +304,7 @@ Client* System::getClientByUsername(const MyString& username) {
 		if (clients[i]->getUsername() == username) 
 			return clients[i];
 
-		throw std::logic_error("No driver with this username was found");
+		throw std::logic_error("No client with this username was found");
 
 	} catch (const std::logic_error& e) {
 		return nullptr;
@@ -289,7 +345,8 @@ void System::createOrder(const Address& currentAddress, const Address& destinati
 
 		orders.pushBack(new Order(getClientByUsername(loggedUser->getUsername()), currentAddress, destination, passengersCount));
 		orders[orders.getSize() - 1]->setDriver(&getClosestDriver(orders[orders.getSize() - 1]));
-		std::cout << orders[orders.getSize() - 1]->getId() << std::endl << orders[orders.getSize() - 1]->getDriver().getUsername() << std::endl << std::endl;
+		std::cout <<"Your order with ID: " << orders[orders.getSize() - 1]->getId() << 
+			" has been successfully created!" << std::endl << std::endl;
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -310,8 +367,13 @@ void System::rateDriver(const MyString& driverUsername, const unsigned rating) {
 
 		for (size_t i = 0; i < finishedOrders.getSize(); i++)
 			if (finishedOrders[i]->getClient().getUsername() == loggedUser->getUsername())
-				if (finishedOrders[i]->getDriver().getUsername() == driverUsername)
+				if (finishedOrders[i]->getDriver().getUsername() == driverUsername) {
 					finishedOrders[i]->getDriver().rate(rating);
+					std::cout << "You have successfully rated driver " << finishedOrders[i]->getDriver().getUsername();
+					return;
+				}
+
+		throw std::logic_error("You cannot rate this driver!");
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -369,6 +431,7 @@ void System::cancelOrder(size_t orderId) {
 			if (orders[i]->getClient().getUsername() == loggedUser->getUsername()
 				&& orders[i]->getId() == orderId) {
 				orders[i]->cancelOrder();
+				std::cout << "Your order with ID: " << orders[i]->getId() << " has been canceled successfully!" << std::endl;
 				return;
 			}
 		}
@@ -394,7 +457,12 @@ void System::addMoney(double amount) {
 		if (!getClientByUsername(loggedUser->getUsername()))
 			throw std::logic_error("Failed to retrieve client information!");
 
+		if (amount <= 0)
+			throw std::logic_error("You cannot add this sum to you bank account!");
+
 		getClientByUsername(loggedUser->getUsername())->addMoney(amount);
+		std::cout << "You have added money to your account successfully!" << std::endl;
+
 	}
 	catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -415,6 +483,9 @@ void System::pay(size_t orderId, double amount) {
 		if (loggedUser->userIsDriver())
 			throw std::logic_error("This is an invalid command for drivers!");
 
+		if (amount <= 0)
+			throw std::logic_error("Amount shoud not be a negative number!");
+
 		bool orderFound = false;
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
@@ -422,7 +493,8 @@ void System::pay(size_t orderId, double amount) {
 					orders[i]->setPrice(amount);
 					orders[i]->getClient().pay(amount);
 					orderFound = true;
-					break;
+					std::cout << "You have paid successfully!" << std::endl;
+					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
 			}
@@ -455,6 +527,8 @@ void System::changeAddress(const Address& address) {
 			throw std::logic_error("There is no driver with such username!");
 
 		getDriverByUsername(loggedUser->getUsername())->changeAddress(address);
+		std::cout << "You have changed your address successfully!" << std::endl;
+
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -574,8 +648,8 @@ void System::declineOrder(size_t orderId) {
 		for (size_t i = 0; i < orders.getSize(); i++) {
 			if (orders[i]->getId() == orderId) {
 				if (orders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
-					Driver* driver = &getClosestDriver(orders[i]);
-					orders[i]->setDriver(driver);
+					orders[i]->setDriver(&getClosestDriver(orders[i]));
+					std::cout << "You have declined this order successfully!" << std::endl;
 					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
@@ -611,6 +685,7 @@ void System::finishOrder(size_t orderId) {
 					orders[i]->finishOrder();
 					finishedOrders.pushBack(orders[i]);
 					orders.popAt(i);
+					std::cout << "You have finished this order successfully!" << std::endl;
 					return;
 				}
 				else throw std::logic_error("You have no rights over this order!");
@@ -653,8 +728,10 @@ void System::acceptPayment(size_t orderId, double amount) {
 
 		for (size_t i = 0; i < finishedOrders.getSize(); i++)
 			if (finishedOrders[i]->getId() == orderId)
-				if(finishedOrders[i]->getDriver().getUsername() == loggedUser->getUsername())
+				if (finishedOrders[i]->getDriver().getUsername() == loggedUser->getUsername()) {
 					finishedOrders[i]->getDriver().acceptPayment(amount);
+					std::cout << "You have accepted successfully!" << std::endl;
+				}
 				else throw std::logic_error("You have no rights over this order!");
 		
 		throw std::logic_error("There is no order with this ID!");

@@ -1,4 +1,5 @@
 #include "Order.h"
+#include <fstream>
 
 Order::Order(const Order& other) {
 	copyFrom(other);
@@ -149,4 +150,24 @@ void Order::finishOrder() {
 
 void Order::cancelOrder() {
 	cancelled = true;
+}
+
+void Order::saveToFile(std::ofstream& file) {
+	file << isFinished << " " << cancelled << " " << minutes << " " << id << " " << passengersCount << " " << passengersCount << " " << price
+		<< " " << start.getName() << " " << start.getPoint().x << " " << start.getPoint().y
+		<< " " << dest.getName() << " " << dest.getPoint().x << " " << dest.getPoint().y;
+	client->saveToFile(file);
+	driver->saveToFile(file);
+}
+
+void Order::readFromFile(std::istream& file) {
+	file >> isFinished >> cancelled >> minutes >> id >> passengersCount >> passengersCount >> price;
+	MyString addressStart, addressDest;
+	int x1, y1, x2, y2;
+	file >> addressStart >> x1 >> y1;
+	file >> addressDest >> x2 >> y2;
+	start.setAddress(addressStart, x1, y1);
+	dest.setAddress(addressDest, x2, y2);
+	client->readFromFile(file);
+	driver->readFromFile(file);
 }

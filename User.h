@@ -25,7 +25,9 @@ public:
 		 const MyString& firstName,
 		 const MyString& lastName);
 
-	virtual User* clone() const;
+	virtual User* clone() const = 0;
+	virtual void saveToFile(std::ofstream& file) = 0;
+	virtual void readFromFile(std::istream& file) = 0;
 	virtual ~User() = default;
 
 	const MyString& getUsername() const;

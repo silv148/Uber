@@ -14,6 +14,9 @@ private:
 	Vector<Order*> finishedOrders;
 	User* loggedUser = nullptr;
 
+	void saveToFile(std::ofstream& file);
+	void readFromFile(std::istream& file);
+
 	static Driver& findNextDriver(Vector<Driver*>& drivers, const Driver* driver);
 	static void sortDriversByDistance(const Order* order, Vector<Driver*>& drivers);
 	Driver& getClosestDriver(Order* order);
@@ -27,8 +30,6 @@ public:
 	static void printRules();
 	static void printCommandsForClients();
 	static void printCommandsForDrivers();
-	void printUsers();
-	void printOrders();
 
 	bool registerUser(const MyString& role, 
 					  const MyString& username,

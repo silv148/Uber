@@ -1,4 +1,5 @@
 #include "Driver.h"
+#include <fstream>
 
 Driver::Driver() : User() {
 	isDriver = true;
@@ -58,4 +59,25 @@ User* Driver::clone() const {
 	return new Driver(*this);
 }
 
+void Driver::saveToFile(std::ofstream& file) {
+	file << username.c_str() << " " << password.c_str() << " " << firstName.c_str() << " " << lastName.c_str() << " " << carNumber << " " << phoneNumber
+		<< " " << address.getName() << " " << address.getPoint().x << " " << address.getPoint().y
+		<< " " << rating.ratingSum << " " << rating.ratingCount << " " << accountBalance << " " << isDriver << " " << available;
+}
 
+void Driver::readFromFile(std::istream& file) {
+	file >> username >> password >> firstName >> lastName >> carNumber >> phoneNumber;
+	MyString addressName;
+	int x, y;
+	file >> addressName >> x >> y;
+	address.setAddress(addressName, x, y);
+	file >> rating.ratingSum >> rating.ratingCount >> accountBalance >> isDriver >> available;
+}
+
+void Driver::splitString(const char* buff, size_t& buffInd, MyString& str) {
+	size_t curInd = 0;
+	while (buff[buffInd] != ',')
+		str[curInd++] = buff[buffInd++];
+
+	buffInd++;
+}

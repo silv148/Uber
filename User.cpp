@@ -18,11 +18,6 @@ User::User(const MyString& username, const MyString& password, const MyString& f
 	setLastName(lastName);
 }
 
-User* User::clone() const {
-	return new User(*this);
-}
-
-
 void User::setUsername(const MyString& username) {
 	if (username.length() < 3 || username.length() > 15)
 		throw std::length_error("Username should be between 3 and 15 symbols!");

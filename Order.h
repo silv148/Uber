@@ -60,4 +60,9 @@ public:
 	
 	void finishOrder();
 	void cancelOrder();
+
+	void saveToFile(std::ofstream& file);
+
+	void readFromFile(std::istream& file);
+
 };

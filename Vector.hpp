@@ -24,7 +24,7 @@ public:
 	void pushAt(const T&, const size_t);
 	void pushAt(T&&, const size_t);
 	T& popBack();
-	T& popAt(const size_t);
+	void popAt(const size_t);
 	T& operator[](const size_t);
 	const T& operator[](const size_t) const;
 	bool empty() const;
@@ -142,16 +142,14 @@ T& Vector<T>::popBack() {
 }
 
 template <typename T>
-T& Vector<T>::popAt(size_t index) {
+void Vector<T>::popAt(size_t index) {
 	if (index >= size)
 		throw "Invalid index";
 
-	T temp = data[index];
 	for (size_t i = index; i < size - 1; i++)
 		data[i] = data[i + 1];
 
 	size--;
-	return temp;
 }
 
 template <typename T>
