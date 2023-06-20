@@ -14,15 +14,12 @@ private:
 	Vector<Order*> finishedOrders;
 	User* loggedUser = nullptr;
 
-	void saveToFile(std::ofstream& file);
-	void readFromFile(std::istream& file);
-
 	static Driver& findNextDriver(Vector<Driver*>& drivers, const Driver* driver);
 	static void sortDriversByDistance(const Order* order, Vector<Driver*>& drivers);
 	Driver& getClosestDriver(Order* order);
 
 public:
-	System();// = default;
+	System() = default;
 	System(const System & other) = delete;
 	System& operator=(const System & other) = delete;
 	~System();
@@ -57,5 +54,8 @@ public:
 	void declineOrder(size_t orderId);
 	void finishOrder(size_t orderId);
 	void acceptPayment(size_t orderId, double amount);
+
+	void saveToFile(std::ofstream& file);
+	void readFromFile(std::ifstream& file);
 };
 

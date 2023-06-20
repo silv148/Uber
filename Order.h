@@ -63,6 +63,6 @@ public:
 
 	void saveToFile(std::ofstream& file);
 
-	void readFromFile(std::istream& file);
+	void readFromFile(std::ifstream& file);
 
 };

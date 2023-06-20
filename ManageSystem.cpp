@@ -1,8 +1,11 @@
 #include "ManageSystem.h"
+#include <fstream>
 
-void run() {
+void SystemManager::run() {
 	System system;
-	system.printRules();
+	readFromFile(system);
+
+	//system.printRules();
 
 	MyString command;
 	std::cin >> command;
@@ -44,10 +47,11 @@ void run() {
 		std::cin >> command;
 		command.toLower();
 	}
-	exit(0);
+	
+	saveToFile(system);
 }
 
-void registerNewUser(System& system) {
+void SystemManager::registerNewUser(System& system) {
 	MyString role;
 	MyString username;
 	MyString password;
@@ -63,7 +67,7 @@ void registerNewUser(System& system) {
 	} while(!system.registerUser(role, username, password, firstName, lastName));
 }
 
-void loginUser(System& system) {
+void SystemManager::loginUser(System& system) {
 	MyString username;
 	MyString password;
 	do {
@@ -72,11 +76,11 @@ void loginUser(System& system) {
 	} while(!system.loginUser(username, password));
 }
 
-void logoutUser(System& system) {
+void SystemManager::logoutUser(System& system) {
 	system.logoutUser();
 }
 
-void createOrder(System& system) {
+void SystemManager::createOrder(System& system) {
 	MyString startAddressName;
 	int x1 = 0;
 	int y1 = 0;
@@ -103,19 +107,19 @@ void createOrder(System& system) {
 						passengersCount);
 }
 
-void checkOrder(System& system) {
+void SystemManager::checkOrder(System& system) {
 	size_t orderId = 0;
 	std::cin >> orderId;
 	system.checkOrder(orderId);
 }
 
-void cancelOrder(System& system) {
+void SystemManager::cancelOrder(System& system) {
 	size_t orderId = 0;
 	std::cin >> orderId;
 	system.cancelOrder(orderId);
 }
 
-void pay(System& system) {
+void SystemManager::pay(System& system) {
 	size_t orderId = 0;
 	double amount = 0.0;
 
@@ -123,7 +127,7 @@ void pay(System& system) {
 	system.pay(orderId, amount);
 }
 
-void rate(System& system) {
+void SystemManager::rate(System& system) {
 	MyString driverUsername;
 	unsigned rating = 0;
 
@@ -131,14 +135,14 @@ void rate(System& system) {
 	system.rateDriver(driverUsername, rating);
 }
 
-void addMoney(System& system) {
+void SystemManager::addMoney(System& system) {
 	double amount = 0.0;
 
 	std::cin >> amount;
 	system.addMoney(amount);
 }
 
-void changeAddress(System& system) {
+void SystemManager::changeAddress(System& system) {
 	MyString destAddressName;
 	int x = 0;
 	int y = 0;
@@ -150,11 +154,11 @@ void changeAddress(System& system) {
 	system.changeAddress(Address(destAddressName, x, y, destAdditionalInfo));
 }
 
-void checkMessages(System& system) {
+void SystemManager::checkMessages(System& system) {
 	system.checkMessages();
 }
 
-void acceptOrder(System& system) {
+void SystemManager::acceptOrder(System& system) {
 	size_t orderId = 0;
 	unsigned min = 0;
 
@@ -163,21 +167,21 @@ void acceptOrder(System& system) {
 	system.acceptOrder(orderId, min);
 }
 
-void declineOrder(System& system) {
+void SystemManager::declineOrder(System& system) {
 	size_t orderId = 0;
 	std::cin >> orderId;
 
 	system.declineOrder(orderId);
 }
 
-void finishOrder(System& system) {
+void SystemManager::finishOrder(System& system) {
 	size_t orderId = 0;
 	std::cin >> orderId;
 
 	system.finishOrder(orderId);
 }
 
-void acceptPayment(System& system) {
+void SystemManager::acceptPayment(System& system) {
 	size_t orderId;
 	double amount = 0;
 
@@ -185,5 +189,28 @@ void acceptPayment(System& system) {
 	std::cin >> amount;
 
 	system.acceptPayment(orderId, amount);
+}
+
+void SystemManager::readFromFile(System& system) {
+	std::ifstream inFile("file.txt");
+	if (!inFile) {
+		std::cerr << "Error";
+		return;
+	}
+	system.readFromFile(inFile);
+	inFile.close();
+
+}
+
+void SystemManager::saveToFile(System& system) {
+	std::ofstream outFile("file.txt");
+
+	if (!outFile) {
+		std::cout << "Problem with oppening file ";
+		return;
+	}
+
+	system.saveToFile(outFile);
+	outFile.close();
 }
 

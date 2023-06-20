@@ -60,17 +60,16 @@ User* Driver::clone() const {
 }
 
 void Driver::saveToFile(std::ofstream& file) {
-	file << username.c_str() << " " << password.c_str() << " " << firstName.c_str() << " " << lastName.c_str() << " " << carNumber << " " << phoneNumber
-		<< " " << address.getName() << " " << address.getPoint().x << " " << address.getPoint().y
-		<< " " << rating.ratingSum << " " << rating.ratingCount << " " << accountBalance << " " << isDriver << " " << available;
+	file << username.c_str() << " " << password.c_str() << " " << firstName.c_str() << " " << lastName.c_str() << " " << carNumber << " " << phoneNumber << " ";
+	address.saveToFile(file);
+	file << " " << rating.ratingSum << " " << rating.ratingCount << " " << accountBalance << " " << isDriver << " " << available;
 }
 
-void Driver::readFromFile(std::istream& file) {
+void Driver::readFromFile(std::ifstream& file) {
 	file >> username >> password >> firstName >> lastName >> carNumber >> phoneNumber;
 	MyString addressName;
 	int x, y;
-	file >> addressName >> x >> y;
-	address.setAddress(addressName, x, y);
+	address.readFromFile(file);
 	file >> rating.ratingSum >> rating.ratingCount >> accountBalance >> isDriver >> available;
 }
 

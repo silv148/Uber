@@ -2,5 +2,7 @@
 #include "ManageSystem.h"
 
 int main() {
-	run();
+	SystemManager systemManager;
+	systemManager.run();
+	exit(0);
 }

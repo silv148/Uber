@@ -160,14 +160,10 @@ void Order::saveToFile(std::ofstream& file) {
 	driver->saveToFile(file);
 }
 
-void Order::readFromFile(std::istream& file) {
+void Order::readFromFile(std::ifstream& file) {
 	file >> isFinished >> cancelled >> minutes >> id >> passengersCount >> passengersCount >> price;
-	MyString addressStart, addressDest;
-	int x1, y1, x2, y2;
-	file >> addressStart >> x1 >> y1;
-	file >> addressDest >> x2 >> y2;
-	start.setAddress(addressStart, x1, y1);
-	dest.setAddress(addressDest, x2, y2);
+	start.readFromFile(file);
+	dest.readFromFile(file);
 	client->readFromFile(file);
 	driver->readFromFile(file);
 }

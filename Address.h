@@ -35,5 +35,7 @@ public:
     const MyString& getAdditionalInfo() const;
 
     void printAddress();
+    void saveToFile(std::ofstream& file);
+    void readFromFile(std::ifstream& file);
 };
 

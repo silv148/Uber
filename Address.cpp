@@ -1,4 +1,5 @@
 #include "Address.h"
+#include <fstream>
 
 double Address::Point::getDist(const Point& other) const {
 	int dx = x - other.x;
@@ -36,4 +37,20 @@ const MyString& Address::getAdditionalInfo() const {
 void Address::printAddress() {
 	std::cout << addressName << " " << point.x << " " << point.y
 		<< " " << additionalInfo << std::endl;
+}
+
+void Address::saveToFile(std::ofstream& file) {
+	addressName == "\0" ? file << "//" : file << addressName;
+	file << " " << point.x << " " << point.y << " ";
+	file << additionalInfo << " " << "//";
+}
+
+void Address::readFromFile(std::ifstream& file) {
+	file >> addressName >> point.x >> point.y;
+	MyString next;
+	file >> next;
+	while(next!="//") {
+		additionalInfo += next;
+		file >> next;
+	}
 }

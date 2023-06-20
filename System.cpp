@@ -46,24 +46,34 @@ void System::saveToFile(std::ofstream& file) {
 	}
 }
 
-void System::readFromFile(std::istream& file) {
+void System::readFromFile(std::ifstream& file) {
 	size_t clientsSize = 0, driversSize = 0, ordersSize = 0, finishedOrdersSize = 0;
 
 	file >> clientsSize;
-	for (size_t i = 0; i < clientsSize; i++)
+	std::cout << clientsSize << std::endl;
+	for (size_t i = 0; i < clientsSize; i++) {
+		clients.pushBack(new Client());
 		clients[i]->readFromFile(file);
+	}
 
 	file >> driversSize ;
-	for (size_t i = 0; i < driversSize; i++)
+	for (size_t i = 0; i < driversSize; i++) {
+		drivers.pushBack(new Driver());
 		drivers[i]->readFromFile(file);
+	}
 
 	file >> ordersSize;
-	for (size_t i = 0; i < ordersSize; i++)
+	for (size_t i = 0; i < ordersSize; i++) {
+		orders.pushBack(new Order());
 		clients[i]->readFromFile(file);
+		std::cout << orders[i]->getId() << std::endl;
+	}
 
 	file >> finishedOrdersSize;
-	for (size_t i = 0; i < finishedOrdersSize; i++)
+	for (size_t i = 0; i < finishedOrdersSize; i++) {
+		orders.pushBack(new Order());
 		clients[i]->readFromFile(file);
+	}
 }
 
 Driver& System::findNextDriver(Vector<Driver*>& drivers, const Driver* driver) {
@@ -104,27 +114,7 @@ Driver& System::getClosestDriver(Order* order) {
 	}
 }
 
-System::System() {
-	std::ifstream inFile("file.txt");
-	if (!inFile) {
-		std::cout << "Error";
-		return;
-	}
-	readFromFile(inFile);
-	inFile.close();
-}
-
 System::~System() {
-	std::ofstream outFile("file.txt");
-	
-	if (!outFile) {
-		std::cout << "Problem with oppening file ";
-		return;
-	}
-	
-	saveToFile(outFile);
-	outFile.close();
-
 	for (size_t i = 0; i < clients.getSize(); i++)
 		delete clients[i];
 

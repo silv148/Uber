@@ -31,7 +31,7 @@ void Client::saveToFile(std::ofstream& file) {
 	file << username.c_str() << " " << password.c_str() << " " << firstName.c_str() << " " << lastName.c_str() << " " << accountBalance << " " << isDriver;
 }
 
-void Client::readFromFile(std::istream& file) {
+void Client::readFromFile(std::ifstream& file) {
 	file >> username >> password >> firstName >> lastName >> accountBalance >> isDriver;
 
 }
