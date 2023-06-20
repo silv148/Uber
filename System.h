@@ -22,7 +22,7 @@ private:
 	Driver& getClosestDriver(Order* order);
 
 public:
-	System() = default;
+	System();// = default;
 	System(const System & other) = delete;
 	System& operator=(const System & other) = delete;
 	~System();

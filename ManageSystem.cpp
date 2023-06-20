@@ -22,6 +22,8 @@ void run() {
 			cancelOrder(system);
 		else if (command == "pay")
 			pay(system);
+		else if (command == "rate_driver")
+			rate(system);
 		else if (command == "add_money")
 			addMoney(system);
 		else if (command == "change_address")
@@ -42,6 +44,7 @@ void run() {
 		std::cin >> command;
 		command.toLower();
 	}
+	exit(0);
 }
 
 void registerNewUser(System& system) {
@@ -175,9 +178,12 @@ void finishOrder(System& system) {
 }
 
 void acceptPayment(System& system) {
+	size_t orderId;
 	double amount = 0;
+
+	std::cin >> orderId;
 	std::cin >> amount;
 
-	system.finishOrder(amount);
+	system.acceptPayment(orderId, amount);
 }
 

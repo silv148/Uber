@@ -47,7 +47,7 @@ void System::saveToFile(std::ofstream& file) {
 }
 
 void System::readFromFile(std::istream& file) {
-	size_t clientsSize, driversSize, ordersSize, finishedOrdersSize;
+	size_t clientsSize = 0, driversSize = 0, ordersSize = 0, finishedOrdersSize = 0;
 
 	file >> clientsSize;
 	for (size_t i = 0; i < clientsSize; i++)
@@ -104,24 +104,26 @@ Driver& System::getClosestDriver(Order* order) {
 	}
 }
 
-//System::System() {
-//	std::ifstream inFile("file.txt");
-//	if (!inFile) {
-//		std::cerr << "Error";
-//		return;
-//	}
-//	readFromFile(inFile);
-//}
+System::System() {
+	std::ifstream inFile("file.txt");
+	if (!inFile) {
+		std::cout << "Error";
+		return;
+	}
+	readFromFile(inFile);
+	inFile.close();
+}
 
 System::~System() {
-	/*std::ofstream outFile("file.txt");
+	std::ofstream outFile("file.txt");
 	
 	if (!outFile) {
-		std::cerr << "Problem with oppening file ";
+		std::cout << "Problem with oppening file ";
 		return;
 	}
 	
-	saveToFile(outFile);*/
+	saveToFile(outFile);
+	outFile.close();
 
 	for (size_t i = 0; i < clients.getSize(); i++)
 		delete clients[i];
@@ -196,7 +198,7 @@ bool System::registerUser(const MyString& role,
 {
 	try {
 		if (loggedUser)
-			throw std::logic_error("You cannot register from someone\'s profine!");
+			throw std::logic_error("You cannot register from someone\'s profile!");
 
 		if (getClientByUsername(username) || getDriverByUsername(username))
 			throw std::logic_error("Username already exists. Please choose a different username.");
@@ -272,10 +274,13 @@ bool System::loginUser(const MyString& username, const MyString& password) {
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
+		return false;
 	} catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
+		return false;
 	} catch (...) {
 		std::cout << "Unknown error." << std::endl;
+		return false;
 	}
 }
 
@@ -487,11 +492,11 @@ void System::pay(size_t orderId, double amount) {
 			throw std::logic_error("Amount shoud not be a negative number!");
 
 		bool orderFound = false;
-		for (size_t i = 0; i < orders.getSize(); i++) {
-			if (orders[i]->getId() == orderId) {
-				if (orders[i]->getClient().getUsername() == loggedUser->getUsername()) {
-					orders[i]->setPrice(amount);
-					orders[i]->getClient().pay(amount);
+		for (size_t i = 0; i < finishedOrders.getSize(); i++) {
+			if (finishedOrders[i]->getId() == orderId) {
+				if (finishedOrders[i]->getClient().getUsername() == loggedUser->getUsername()) {
+					finishedOrders[i]->setPrice(amount);
+					finishedOrders[i]->getClient().pay(amount);
 					orderFound = true;
 					std::cout << "You have paid successfully!" << std::endl;
 					return;
