@@ -28,7 +28,6 @@ public:
 	Order() = default;
 	Order(const Order& other);
 	Order& operator=(const Order& other);
-	~Order();
 
 	Order(Client* client,
 		const Address& start,

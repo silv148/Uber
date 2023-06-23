@@ -14,10 +14,6 @@ Order& Order::operator=(const Order& other) {
 	return *this;
 }
 
-Order::~Order() {
-	free();
-}
-
 Order::Order(Client* client, const Address& start, const Address& dest, size_t passengersCount) {
 	setOrder(client, start, dest, passengersCount);
 }

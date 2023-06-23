@@ -5,7 +5,7 @@ void SystemManager::run() {
 	System system;
 	readFromFile(system);
 
-	//system.printRules();
+	system.printRules();
 
 	MyString command;
 	std::cin >> command;

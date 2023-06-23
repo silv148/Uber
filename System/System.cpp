@@ -66,7 +66,6 @@ void System::readFromFile(std::ifstream& file) {
 	for (size_t i = 0; i < ordersSize; i++) {
 		orders.pushBack(new Order());
 		clients[i]->readFromFile(file);
-		std::cout << orders[i]->getId() << std::endl;
 	}
 
 	file >> finishedOrdersSize;
