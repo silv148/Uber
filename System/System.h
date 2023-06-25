@@ -44,6 +44,7 @@ public:
 						   size_t passengersCount = 1);
 	void rateDriver(const MyString& driverName, const unsigned rating);
 	void checkOrder(size_t orderId) const;
+	void checkOrders() const;
 	void cancelOrder(size_t orderId);
 	void addMoney(double amount);
 	void pay(size_t orderId, double amount);

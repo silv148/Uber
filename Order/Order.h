@@ -8,6 +8,7 @@ class Order {
 private:
 	bool isFinished = false;
 	bool cancelled = false;
+	bool inProcess = false;
 	unsigned minutes = 0;
 	size_t id = static_cast<size_t> (time(NULL));
 	size_t passengersCount = 0;
@@ -39,6 +40,7 @@ public:
 	void setDriver(Driver* driver);
 	void setClient(Client* client);
 	void setPrice(double amount);
+	void setInProcess(bool inProcess);
 
 	void printOrderForDriver();
 	void printOrderForClient();
@@ -56,6 +58,7 @@ public:
 	Address getDest() const;
 	double getPrice() const;
 	bool isCancelled() const;
+	bool getInProcess() const;
 	
 	void finishOrder();
 	void cancelOrder();

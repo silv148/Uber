@@ -21,6 +21,8 @@ void SystemManager::run() {
 			createOrder(system);
 		else if (command == "check_order")
 			checkOrder(system);
+		else if (command == "check_orders")
+			checkOrders(system);
 		else if (command == "cancel_order")
 			cancelOrder(system);
 		else if (command == "pay")
@@ -49,6 +51,7 @@ void SystemManager::run() {
 	}
 	
 	saveToFile(system);
+	return;
 }
 
 void SystemManager::registerNewUser(System& system) {
@@ -111,6 +114,10 @@ void SystemManager::checkOrder(System& system) {
 	size_t orderId = 0;
 	std::cin >> orderId;
 	system.checkOrder(orderId);
+}
+
+void SystemManager::checkOrders(System& system) {
+	system.checkOrders();
 }
 
 void SystemManager::cancelOrder(System& system) {

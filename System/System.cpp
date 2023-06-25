@@ -50,7 +50,6 @@ void System::readFromFile(std::ifstream& file) {
 	size_t clientsSize = 0, driversSize = 0, ordersSize = 0, finishedOrdersSize = 0;
 
 	file >> clientsSize;
-	std::cout << clientsSize << std::endl;
 	for (size_t i = 0; i < clientsSize; i++) {
 		clients.pushBack(new Client());
 		clients[i]->readFromFile(file);
@@ -65,13 +64,25 @@ void System::readFromFile(std::ifstream& file) {
 	file >> ordersSize;
 	for (size_t i = 0; i < ordersSize; i++) {
 		orders.pushBack(new Order());
-		clients[i]->readFromFile(file);
+		orders[i]->readFromFile(file);
+		static Client client;
+		static Driver driver;
+		client.readFromFile(file);
+		driver.readFromFile(file);
+		orders[i]->setClient(getClientByUsername(client.getUsername()));
+		orders[i]->setDriver(getDriverByUsername(driver.getUsername()));
 	}
 
 	file >> finishedOrdersSize;
 	for (size_t i = 0; i < finishedOrdersSize; i++) {
-		orders.pushBack(new Order());
-		clients[i]->readFromFile(file);
+		finishedOrders.pushBack(new Order());
+		finishedOrders[i]->readFromFile(file);
+		static Client client;
+		static Driver driver;
+		client.readFromFile(file);
+		driver.readFromFile(file);
+		finishedOrders[i]->setClient(getClientByUsername(client.getUsername()));
+		finishedOrders[i]->setDriver(getDriverByUsername(driver.getUsername()));
 	}
 }
 
@@ -155,10 +166,11 @@ void System::printCommandsForClients() {
 		<< "<passengers_count>" << std::endl
 		<< "	     *Note that coordinates are whole numbers!" << std::endl << std::endl
 		<< "2. check_order <ID> " << std::endl
-		<< "         *ID is a whole number which you will recieve rignt after creating an order" << std::endl << std::endl
-		<< "3. cancel_order <ID> " << std::endl << std::endl
-		<< "4. pay <order_ID> <amount>" << std::endl
-		<< "5. add_money <amount>" << std::endl
+		<< "         *ID is a whole number which you will recieve rignt after creating an order" << std::endl << std::endl 
+		<< "3. check_orders" << std::endl
+		<< "4. cancel_order <ID> " << std::endl << std::endl
+		<< "5. pay <order_ID> <amount>" << std::endl
+		<< "6. add_money <amount>" << std::endl
 		<< "         *Note that you start with an empty bank account!" << std::endl << std::endl
 		<< "Have fun using our system :)" << std::endl << std::endl;
 }
@@ -363,7 +375,7 @@ void System::rateDriver(const MyString& driverUsername, const unsigned rating) {
 			if (finishedOrders[i]->getClient().getUsername() == loggedUser->getUsername())
 				if (finishedOrders[i]->getDriver().getUsername() == driverUsername) {
 					finishedOrders[i]->getDriver().rate(rating);
-					std::cout << "You have successfully rated driver " << finishedOrders[i]->getDriver().getUsername();
+					std::cout << "You have successfully rated driver " << finishedOrders[i]->getDriver().getUsername() << std::endl;
 					return;
 				}
 
@@ -399,10 +411,45 @@ void System::checkOrder(size_t orderId) const {
 					<< "---------------------------------------------------------------------------------"
 					<< std::endl;
 				hasOrders = true;
+				return;
 			}
 		}
 		if(!hasOrders)
-		 std::cout << "You have no orders with such ID";
+		 std::cout << "You have no orders with such ID" << std::endl;
+
+	} catch (const std::logic_error& e) {
+		std::cout << e.what() << std::endl;
+	} catch (const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown error." << std::endl;
+	}
+}
+
+void System::checkOrders() const {
+	try {
+		if (!loggedUser)
+			throw std::logic_error("Log in to have access to the system!");
+
+		if (loggedUser->userIsDriver())
+			throw std::logic_error("This is an invalid command for drivers!");
+
+		bool hasOrders = false;
+
+		for (size_t i = 0; i < orders.getSize(); i++) {
+			if (orders[i]->getClient().getUsername() == loggedUser->getUsername()) {
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				orders[i]->printOrderForClient();
+				std::cout << std::endl
+					<< "---------------------------------------------------------------------------------"
+					<< std::endl;
+				hasOrders = true;
+			}
+		}
+		if (!hasOrders)
+			std::cout << "You have no orders with such ID" << std::endl;
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;
@@ -564,7 +611,7 @@ void System::checkMessages() {
 					std::cout << "To: " << std::endl;
 					orders[i]->getDest().printAddress();
 					std::cout << std::endl 
-						<<"Order ID: " << orders[i]->getId()
+						<<"Order ID: " << orders[i]->getId() << std::endl
 						<< "---------------------------------------------------------------------------------"
 						<< std::endl;
 					hasMessages = true;
@@ -573,7 +620,7 @@ void System::checkMessages() {
 		}
 
 		if (!hasMessages)
-			std::cout << "You have no new messages!";
+			std::cout << "You have no new messages!" << std::endl;
 
 	} catch (const std::logic_error& e) {
 		std::cout << e.what() << std::endl;

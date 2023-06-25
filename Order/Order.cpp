@@ -34,6 +34,10 @@ void Order::setPrice(double amount) {
 	this->price = amount;
 }
 
+void Order::setInProcess(bool inProcess) {
+	this->inProcess = inProcess;
+}
+
 void Order::setOrder(Client* client,
 					const Address& start,
 					const Address& dest,
@@ -139,6 +143,10 @@ bool Order::isCancelled() const {
 	return cancelled;
 }
 
+bool Order::getInProcess() const {
+	return inProcess;
+}
+
 void Order::finishOrder() {
 	isFinished = true;
 	driver->setAvailability(true);
@@ -149,17 +157,19 @@ void Order::cancelOrder() {
 }
 
 void Order::saveToFile(std::ofstream& file) {
-	file << isFinished << " " << cancelled << " " << minutes << " " << id << " " << passengersCount << " " << passengersCount << " " << price
-		<< " " << start.getName() << " " << start.getPoint().x << " " << start.getPoint().y
-		<< " " << dest.getName() << " " << dest.getPoint().x << " " << dest.getPoint().y;
+	file << isFinished << " " << cancelled << " " << minutes << " " << id << " " << passengersCount << " " << price << std::endl;
+	start.saveToFile(file);
+	file << std::endl;
+	dest.saveToFile(file);
+	file << std::endl;
 	client->saveToFile(file);
+	file << std::endl;
 	driver->saveToFile(file);
+	file << std::endl;
 }
 
 void Order::readFromFile(std::ifstream& file) {
-	file >> isFinished >> cancelled >> minutes >> id >> passengersCount >> passengersCount >> price;
+	file >> isFinished >> cancelled >> minutes >> id >> passengersCount >> price;
 	start.readFromFile(file);
 	dest.readFromFile(file);
-	client->readFromFile(file);
-	driver->readFromFile(file);
 }

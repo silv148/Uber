@@ -10,6 +10,7 @@ private:
 
 	void createOrder(System& system);
 	void checkOrder(System& system);
+	void checkOrders(System& system);
 	void cancelOrder(System& system);
 	void pay(System& system);
 	void rate(System& system);
